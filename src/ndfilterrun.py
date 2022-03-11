@@ -31,11 +31,7 @@ class ndfilter:
     """
     def __init__(self):
         self.conf = cfgfile()
-        
-        
-        print('Using cfg file with;')
-        print(self.conf)
-        print()
+
         
         self.log = nd_filter_log()
         #default position list

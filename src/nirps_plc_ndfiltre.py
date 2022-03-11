@@ -9,7 +9,24 @@ Created on Wed Mar  9 07:10:09 2022
 from opcua import Client,ua
 import traceback
 from time import sleep 
+from sys import argv
+from ndfilterlog import cfgfile
 
+class argument:
+    def __init__(self):
+        self.items = {}
+        for arg in argv:
+            if '=' in arg:
+                self.items[arg.split('=')[0]] = arg.split('=')[1]
+            else:
+                self.items[arg] = 'Null'
+    def __contains__(self, item):
+        return item in self.items
+    def __getitem__(self, item):
+        if item in self.items:
+            return self.items[item]
+        else:
+            None
 
 class beckoff():
     
@@ -31,16 +48,16 @@ class beckoff():
         self.ip_addr = ip#134.171.102.126 in LaSilla
         self.port = port#PLC comm port is usually 4840
         self.beck = None
+        #PLC variables use to read/write selector and filter wheel position
         self.selector_node = 'MAIN.Selector%d.stat.lrPosActual' 
-        
         self.node_select_lrposition = 'MAIN.Selector%d.ctrl.lrPosition' #node to change the lrPosition of Filter 1 or 2
         self.node_select_nCommand = 'MAIN.Selector%d.ctrl.nCommand' #node to change the nCommand of Filter 1 or 2
-        self.node_select_bExecute = 'MAIN.Selector%d.ctrl.bExecute' #node to change the bExecute of Filter 1 or 2
-        
+        self.node_select_bExecute = 'MAIN.Selector%d.ctrl.bExecute' #node to change the bExecute of Filter 1 or 2       
         self.node_actual_pos = 'MAIN.Filter%d.stat.lrPosActual' #node to read a Filter# variable (stat)
         self.node_lr_position = 'MAIN.Filter%d.ctrl.lrPosition' #node to change the lrPosition of Filter 1 or 2
         self.node_nCommand = 'MAIN.Filter%d.ctrl.nCommand' #node to change the nCommand of Filter 1 or 2
         self.node_bExecute = 'MAIN.Filter%d.ctrl.bExecute' #node to change the bExecute of Filter 1 or 2
+
     def selector_position(self,sNb):
         '''
         Read selector position
@@ -248,7 +265,101 @@ class beckoff():
             # return False # uncomment to pass exception through
 
         return True
-if '__main__' in __name__:
-    with beckoff("192.168.62.150",hwsimul=False) as beck: 
+def help():
+    print("\n\t:::: Beckoff PLC helper menu ::::\n")
+    print('--get-position: get absolute position of a subdevice')
+    print('--set-position: Set the position of a subdevice')
+    print('--selector1: select selector #1')
+    print('--selector2: select selector #2')
+    print('--nd-filter1: select filter wheel #1')
+    print('--nd-filter2: select filter wheel #2')
+    print('--ip: set PLC ip address for this script')
+    print('--port: set PLC communication port for this script.')
+    print('--test-hardware: test if we can connect to beckoff PLC hardware.')
+    print('--plc-simul: run in simulation')
+def get_args_conf():
+    '''
+    Will check if an argument for port and ip is set, then
+    it will check the config file than it will check the 
+    default values.
+
+    Returns
+    -------
+    ip,port
+
+    '''
+    args = argument()
+    conf = cfgfile()
+    if '--ip' in args:
+        ip = args['--ip']
+    elif 'beckoff-ip' in conf:
+        ip = conf['beckoff-ip']
+    else:
+        ip = "134.171.102.127"
+    if '--port' in args:
+        p = args['--port']
+    elif '--beckoff-port' in conf:
+        p = conf['--beckoff-port']
+    else:
+        p = 4840
+    return ip,p
+def test_hardware():
+    print("Trying to connect to beckoff. If hardware fails you might see a long list of error messages.")
+    try:
+        ip,p = get_args_conf()
+        with beckoff(ip,port=p,hwsimul=False) as beck:
             pos1 = beck.selector_position(1)
-            pos2 = beck.selector_position(2)
+        print("Hardware OK")
+        
+    except:
+        print("Hardware test failed")
+        
+def isFloat(txt):
+    if not len(['.' for c in txt])<=1:
+        return False
+    return all([c.isnumeric() for c in txt if '.' not in c])
+if '__main__' in __name__:
+    args = argument()
+    if '--help' in args:
+        help()
+        exit()
+    if '--test-hardware' in args:
+        test_hardware()
+        exit(0)
+    ip,p = get_args_conf()
+    simul = '--plc-simul' in args
+
+    if all(['--selector1' in args,'--set-position' in args]):
+        #we want to move selector 1
+        with beckoff(ip,port=p,hwsimul=simul) as beck: 
+            if isFloat(args['--set-position']):
+                beck.set_selector(1, float(args['--set-position']))
+    elif all(['--selector2' in args,'--set-position' in args]):
+        #we want to move selector 2
+        with beckoff(ip,port=p,hwsimul=simul) as beck: 
+            if isFloat(args['--set-position']):
+                beck.set_selector(2, float(args['--set-position']))
+    elif all(['--selector1' in args,'--get-position' in args]):
+        #we want to get position of selector 1
+        with beckoff(ip,port=p,hwsimul=simul) as beck: 
+            print(beck.selector_position(1))
+    elif all(['--selector2' in args,'--get-position' in args]):
+        with beckoff(ip,port=p,hwsimul=simul) as beck:
+            print(beck.selector_position(2))
+    #samething for nd-filter
+    elif all(['--nd-filter1' in args,'--set-position' in args]):
+        with beckoff(ip,port=p,hwsimul=simul) as beck: 
+            if isFloat(args['--set-position']):
+                #beck.set_selector(1, float(args['--set-position']))
+                beck.set_NDFilter(1,int(args['--set-position']))
+    elif all(['--nd-filter2' in args,'--set-position' in args]):
+        with beckoff(ip,port=p,hwsimul=simul) as beck: 
+            if isFloat(args['--set-position']):
+                beck.set_NDFilter(2,int(args['--set-position']))
+    elif all(['--nd-filter1' in args,'--get-position' in args]):
+        with beckoff(ip,port=p,hwsimul=simul) as beck: 
+            print(beck.read_NDFilter(1))
+    elif all(['--nd-filter2' in args,'--get-position' in args]):
+        with beckoff(ip,port=p,hwsimul=simul) as beck:
+            print(beck.read_NDFilter(2))
+    

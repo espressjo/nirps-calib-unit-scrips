@@ -40,9 +40,17 @@ class cfgfile:
         return self.cfg
     def isFloat(self,txt):
         return all([t.isnumeric() for t in txt if t!='.'])
+    def isIP(self,txt):
+        if '.' not in txt:
+            return False
+        if not len(['.' for c in txt if '.' in c])==3:
+            return False
+        return all([c.isnumeric() for c in txt if c!='.'])
     def morph(self,txt:str):
         if txt.isnumeric():
             return int(txt)
+        elif self.isIP(txt):
+            return str(txt)
         elif self.isFloat(txt):
             return float(txt)
         return txt

@@ -27,6 +27,9 @@ class argument:
             return self.items[item]
         else:
             None
+    def __str__(self):
+        l = ["%s: %s"%(arg,self.items[arg]) if self.items[arg]!='Null' else "%s"%arg for arg in self.items]
+        return "\n".join(l)    
 
 class beckoff():
     
@@ -44,7 +47,8 @@ class beckoff():
     '''
     def __init__(self,ip,hwsimul=False,port=4840):
         self.simul = hwsimul
-        self.simul_pos = 90.0
+        self.ndfilter_simul_pos = 92540
+        self.selector_simul_pos = 90.0
         self.ip_addr = ip#134.171.102.126 in LaSilla
         self.port = port#PLC comm port is usually 4840
         self.beck = None
@@ -74,7 +78,8 @@ class beckoff():
 
         '''
         if self.simul:
-            return self.simul_pos
+            print('Selector %d is at %d'%(sNb,self.selector_simul_pos))
+            return self.selector_simul_pos
         val1 = self.beck.get_node("ns=4; s=%s"%(self.selector_node%sNb)).get_value()
         out = str(val1).strip()
         if isinstance(out,str):
@@ -92,7 +97,7 @@ class beckoff():
 
         '''
         if self.simul:
-            print('Connected to simulatec beckoff')
+            print('Connected to simulatec beckoff at IP: %s on port: %d'%(self.ip_addr,self.port))
             return
         self.beck = Client("opc.tcp://%s:%d"%(self.ip_addr,self.port))
         self.beck.connect()
@@ -120,7 +125,8 @@ class beckoff():
 
         '''
         if self.simul:
-            return self.simul_pos
+            print('ND filter %d is at psition %d'%(filter_nb,self.ndfilter_simul_pos))
+            return self.ndfilter_simul_pos
         val1 = self.beck.get_node("ns=4; s=%s"%(self.node_actual_pos%filter_nb)).get_value()
         out = str(val1).strip()
         if isinstance(out,str):
@@ -162,8 +168,11 @@ class beckoff():
 
         '''
         if self.simul:
-            self.simul_pos = pos
-            return self.simul_pos
+            print('Setting ND filter %d position at %d'%(filter_nb,pos))
+            sleep(2)
+            self.ndfilter_simul_pos = pos
+            print('ND filter %d reached position %d'%(filter_nb,pos))
+            return self.ndfilter_simul_pos
         if filter_nb!=1 and filter_nb!=2:
             print("filter_nb must be 1 or 2")
             return
@@ -211,8 +220,11 @@ class beckoff():
             
         '''
         if self.simul:
-            self.simul_pos = pos
-            return self.simul_pos
+            print('Setting selector %d position at %d'%(selector,pos))
+            sleep(2)
+            self.selector_simul_pos = pos
+            print('Selector %d reached position %d'%(selector,pos))
+            return self.selector_simul_pos
         if selector!=1 and selector!=2:
             print("filter_nb must be 1 or 2")
             return
@@ -267,25 +279,26 @@ class beckoff():
         return True
 def help():
     print("\n\t:::: Beckoff PLC helper menu ::::\n")
-    print('--get-position: get absolute position of a subdevice')
-    print('--set-position: Set the position of a subdevice')
-    print('--selector1: select selector #1')
-    print('--selector2: select selector #2')
-    print('--nd-filter1: select filter wheel #1')
-    print('--nd-filter2: select filter wheel #2')
-    print('--ip: set PLC ip address for this script')
-    print('--port: set PLC communication port for this script.')
-    print('--test-hardware: test if we can connect to beckoff PLC hardware.')
-    print('--plc-simul: run in simulation')
+    print('\t--get-position: get absolute position of a subdevice')
+    print('\t--set-position: Set the position of a subdevice')
+    print('\t--selector1: select selector #1')
+    print('\t--selector2: select selector #2')
+    print('\t--nd-filter1: select filter wheel #1')
+    print('\t--nd-filter2: select filter wheel #2')
+    print('\t--ip: set PLC ip address for this script')
+    print('\t--port: set PLC communication port for this script.')
+    print('\t--test-hardware: test if we can connect to beckoff PLC hardware.')
+    print('\t--plc-simul: run in simulation')
 def get_args_conf():
     '''
     Will check if an argument for port and ip is set, then
-    it will check the config file than it will check the 
+    it will check the config file. If nothing is found it will
+    set to default ip: 134.171.102.127,port: 4840
     default values.
 
     Returns
     -------
-    ip,port
+    STR,INT
 
     '''
     args = argument()
@@ -304,22 +317,34 @@ def get_args_conf():
         p = 4840
     return ip,p
 def test_hardware():
+    '''
+    This function will try to connect to the hardware and read the position
+    of selector #1.
+
+    Returns
+    -------
+    T if successful, F if we have an hardware problem.
+
+    '''
     print("Trying to connect to beckoff. If hardware fails you might see a long list of error messages.")
+    args = argument()
     try:
         ip,p = get_args_conf()
-        with beckoff(ip,port=p,hwsimul=False) as beck:
+        sim = '--plc-simul' in args
+        with beckoff(ip,port=p,hwsimul=sim) as beck:
             pos1 = beck.selector_position(1)
         print("Hardware OK")
-        
+        return True
     except:
         print("Hardware test failed")
-        
+        return False
 def isFloat(txt):
-    if not len(['.' for c in txt])<=1:
+    if len(['.' for c in txt if '.' in c])>1:
         return False
     return all([c.isnumeric() for c in txt if '.' not in c])
 if '__main__' in __name__:
     args = argument()
+    
     if '--help' in args:
         help()
         exit()
@@ -331,7 +356,9 @@ if '__main__' in __name__:
 
     if all(['--selector1' in args,'--set-position' in args]):
         #we want to move selector 1
+        
         with beckoff(ip,port=p,hwsimul=simul) as beck: 
+            print(args['--set-position'])
             if isFloat(args['--set-position']):
                 beck.set_selector(1, float(args['--set-position']))
     elif all(['--selector2' in args,'--set-position' in args]):

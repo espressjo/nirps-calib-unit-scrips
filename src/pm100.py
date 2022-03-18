@@ -13,6 +13,9 @@ import numpy as np
 import traceback
 from ndfilterlog import cfgfile
 from sys import argv
+from colorama import init
+init()
+from colorama import Fore,Style
 
 """
 Will try to find the pm100 plugged on the computer. If no device is found
@@ -134,9 +137,9 @@ class pm100:
 def test_package():
     def colored(txt,c='green'):
         if c=='red':
-            return '\x1b[0;30;41m%s\x1b[0m'%txt
+            return f"{Fore.RED}%s{Style.RESET_ALL}"%txt
         else:
-            return '\x1b[0;30;42m%s\x1b[0m'%txt
+            return f"{Fore.GREEN}%s{Style.RESET_ALL}"%txt
     #pyvisa
     try:
         import pyvisa

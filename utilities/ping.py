@@ -9,6 +9,10 @@ Created on Fri Mar 18 13:23:38 2022
 import platform    
 import subprocess  
 from sys import argv
+from colorama import init
+init()
+from colorama import Fore,Style
+
 ips_ccr = {"PLC":"134.171.102.126",
        "Opto-22":"134.171.102.127",
        "iBoot1":"134.171.102.128",
@@ -59,9 +63,9 @@ def ping(host):
     return subprocess.call(command,stdout=subprocess.PIPE) == 0
 def colored(txt,c='green'):
     if c=='red':
-        return '\x1b[0;30;41m%s\x1b[0m'%txt
+        return f"{Fore.RED}%s{Style.RESET_ALL}"%txt
     else:
-        return '\x1b[0;30;42m%s\x1b[0m'%txt
+        return f"{Fore.GREEN}%s{Style.RESET_ALL}"%txt
 def test_all():
     print("will test BE-CCR devices; ")
     for h in ips_ccr:

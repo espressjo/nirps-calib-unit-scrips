@@ -98,6 +98,8 @@ class pm100:
         self.inst = self.reasource_manager.open_resource(resource)
         self.inst.timeout = None
         self.power_meter = ThorlabsPM100(inst=self.inst)
+        #set to photometer
+        self.power_meter.input.adapter.type ='PHOT'
         self.power_meter.sense.average.count = self.avg_measurment#average 1000 reading by default
         
         self.power_meter.configure.scalar.power()#configure for power measurment
@@ -106,6 +108,16 @@ class pm100:
         self.power_meter.system.lfrequency = 50
         self.lfrequency = 50
         #print('Initialized')
+    def set_lpass(self,state='ON'):
+        if 'ON' in state:
+            self.power_meter.input.pdiode.filter.lpass.state =1
+        else:
+            self.power_meter.input.pdiode.filter.lpass.state =0
+    def _get_lpass(self):
+        if self.power_meter.input.pdiode.filter.lpass.state ==1:
+            return 'ON'
+        else:
+            return 'OFF'
     def init_sim(self):
         self.avg_measurment = 1000
         self.sensor_idn = 'Simulation'
@@ -113,13 +125,47 @@ class pm100:
     def avg(self,_arr):
         #no need for anything more robust. Test for nan (just in case) 
         return np.nanmean(_arr)
+    def zero_adjust(self):
+        '''
+        Perform a zero adjustment. Make sure the sensor is covered.
+
+        Returns
+        -------
+        None.
+
+        '''
+        from time import sleep
+        print("Current zero value: %.6E"%(self.power_meter.sense.correction.collect.zero.magnitude))
+        print("Starting zero adjust, this may take a few seconds.")
+        self.power_meter.sense.correction.collect.zero.initiate()
+        
+        while(self.power_meter.sense.correction.collect.zero.state==1):
+            sleep(1)
+        print("New zero value: %.6E"%(self.power_meter.sense.correction.collect.zero.magnitude))
+    def set_correction_wavelength(self,wl):
+        print("current correction wavelength %f"%self.power_meter.sense.correction.wavelength)
+        self.power_meter.sense.correction.wavelength = wl
+        print("New correction wavelength set to %f"%self.power_meter.sense.correction.wavelength)
+
+    def __str__(self):
+        txt = ""
+        txt+="Current zero value: %.6E\n"%(self.power_meter.sense.correction.collect.zero.magnitude)
+        txt+="lfrequency: %f\n"%(self.power_meter.system.lfrequency)
+        txt+="Sensor: %s\n"%(self.power_meter.system.sensor.idn)
+        txt+="Average readout: %d\n"%(self.power_meter.sense.average.count)
+        txt+="Correction wavelength: %f\n"%(self.power_meter.sense.correction.wavelength)
+        txt+="low pass filter: %s\n"%(self._get_lpass())
+        return txt
     def _measure(self):
         return self.power_meter.read
     def _measure_sim(self):
         vals = [np.random.ranf() for i in range(self.avg_measurment)]
         return self.avg(vals)
 
-    
+    def close(self):
+        if self.reasource_manager:
+            self.inst.close()
+            self.reasource_manager.close() 
     def __enter__(self):
         '''
         Since connection to hardware is made, its better to use with statement.

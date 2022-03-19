@@ -49,12 +49,14 @@ class pm100:
         self.power_meter = None
         self.reasource_manager = None
         self.avg_measurment = 1000
+        self.lfrequency = 50
         cfg = cfgfile()
         if 'pm100-avg' in cfg:
             self.avg_measurment = cfg['pm100-avg']
         self.sensor_idn = 'Unknown' #ID of the sensor plugged in
         self.unit = 'W' #unit of the measurement
         self.measurment_type = 'power' #type of measurment
+        
         
         if simulation:
             self.init_sim()
@@ -100,6 +102,9 @@ class pm100:
         
         self.power_meter.configure.scalar.power()#configure for power measurment
         self.sensor_idn = self.power_meter.system.sensor.idn
+        #set the power meter to have lfrequency of 50Hz
+        self.power_meter.system.lfrequency = 50
+        self.lfrequency = 50
         #print('Initialized')
     def init_sim(self):
         self.avg_measurment = 1000

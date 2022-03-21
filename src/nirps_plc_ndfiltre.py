@@ -13,6 +13,13 @@ from sys import argv
 from ndfilterlog import cfgfile
 
 class argument:
+    '''
+    Small class the reads up the command line argument. 
+    Ex: 
+        args = argument()
+        if '--path' in args:
+            path = args['--path']
+    '''
     def __init__(self):
         self.items = {}
         for arg in argv:
@@ -38,10 +45,11 @@ class beckoff():
         The PLC must be visible on the network.
         Usefull methods are;
             *connect - open a connection with PLC (It is better to use with -- as --... statement)\n
+            *disconnect - if connect() is used, use disconnect to release the hardware.
             *close - close a connection with PLC\n
-            *read_NDFilter - read ND filter position\n
-            *set_NDFilter - set a ND filter to position\n
-            *selector_position - return selector position
+            *get_ndfilter - read ND filter position\n
+            *set_ndfilter - set a ND filter to position\n
+            *get_selector - return selector position
             *set_selector - set selector
             
     '''
@@ -62,9 +70,9 @@ class beckoff():
         self.node_nCommand = 'MAIN.Filter%d.ctrl.nCommand' #node to change the nCommand of Filter 1 or 2
         self.node_bExecute = 'MAIN.Filter%d.ctrl.bExecute' #node to change the bExecute of Filter 1 or 2
 
-    def selector_position(self,sNb):
+    def get_selector(self,sNb):
         '''
-        Read selector position
+        Read selector sNb position
 
         Parameters
         ----------
@@ -110,9 +118,9 @@ class beckoff():
         child = objects.get_children()
         print(":::::child:::::")    
         print(child)
-    def read_NDFilter(self,filter_nb):
+    def get_ndfilter(self,filter_nb):
         '''
-        This function will return the value (str format) of varible [var] of ND filter # [filter_nb]
+        This function will return the ndfilter position. 
 
         Parameters
         ----------
@@ -147,7 +155,7 @@ class beckoff():
         self.beck.disconnect()
         return
 
-    def set_NDFilter(self,filter_nb,pos):
+    def set_ndfilter(self,filter_nb,pos):
         '''
         Set a ND filter to position. The position of the selector will be monitered
         every second, once the requested position as a difference of less than 1 with
@@ -332,7 +340,7 @@ def test_hardware():
         ip,p = get_args_conf()
         sim = '--plc-simul' in args
         with beckoff(ip,port=p,hwsimul=sim) as beck:
-            pos1 = beck.selector_position(1)
+            pos1 = beck.get_selector(1)
         print("Hardware OK")
         return True
     except:
@@ -369,24 +377,24 @@ if '__main__' in __name__:
     elif all(['--selector1' in args,'--get-position' in args]):
         #we want to get position of selector 1
         with beckoff(ip,port=p,hwsimul=simul) as beck: 
-            print(beck.selector_position(1))
+            print(beck.get_selector(1))
     elif all(['--selector2' in args,'--get-position' in args]):
         with beckoff(ip,port=p,hwsimul=simul) as beck:
-            print(beck.selector_position(2))
+            print(beck.get_selector(2))
     #samething for nd-filter
     elif all(['--nd-filter1' in args,'--set-position' in args]):
         with beckoff(ip,port=p,hwsimul=simul) as beck: 
             if isFloat(args['--set-position']):
                 #beck.set_selector(1, float(args['--set-position']))
-                beck.set_NDFilter(1,int(args['--set-position']))
+                beck.set_ndfilter(1,int(args['--set-position']))
     elif all(['--nd-filter2' in args,'--set-position' in args]):
         with beckoff(ip,port=p,hwsimul=simul) as beck: 
             if isFloat(args['--set-position']):
-                beck.set_NDFilter(2,int(args['--set-position']))
+                beck.set_ndfilter(2,int(args['--set-position']))
     elif all(['--nd-filter1' in args,'--get-position' in args]):
         with beckoff(ip,port=p,hwsimul=simul) as beck: 
-            print(beck.read_NDFilter(1))
+            print(beck.get_ndfilter(1))
     elif all(['--nd-filter2' in args,'--get-position' in args]):
         with beckoff(ip,port=p,hwsimul=simul) as beck:
-            print(beck.read_NDFilter(2))
+            print(beck.get_ndfilter(2))
     

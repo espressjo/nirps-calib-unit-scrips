@@ -27,8 +27,23 @@ The main method is pm100.measurement() use this. It is recommended to use
 the;
      with ... as ...: format to make sure all resource are properly closed!
      
+methods;
+    *set_lpass: Set a low pass filter.
+    *measurement: Read the photodiode.
+    *zero_adjust: Perform a zero adjusment. Make sure the photodiode is covered.
+    *set_correction_wavelength: Set a correction wavelength. Used for absolute measurement.
+    *close: release the hardware. We recommend using with/as statement.
+    
+     
 """
 class argument:
+    '''
+    Small class the reads up the command line argument. 
+    Ex: 
+        args = argument()
+        if '--path' in args:
+            path = args['--path']
+    '''
     def __init__(self):
         self.items = {}
         for arg in argv:
@@ -109,16 +124,38 @@ class pm100:
         self.lfrequency = 50
         #print('Initialized')
     def set_lpass(self,state='ON'):
+        '''
+        Set the low-pass filter On or OFF
+
+        Parameters
+        ----------
+        state : TYPE, optional
+            DESCRIPTION. The default is 'ON'.
+
+        Returns
+        -------
+        None.
+
+        '''
         if 'ON' in state:
             self.power_meter.input.pdiode.filter.lpass.state =1
         else:
             self.power_meter.input.pdiode.filter.lpass.state =0
     def _get_lpass(self):
+        #Utility function. This is not meantto be use outside this script.
         if self.power_meter.input.pdiode.filter.lpass.state ==1:
             return 'ON'
         else:
             return 'OFF'
     def init_sim(self):
+        '''
+        Fake initialization.
+
+        Returns
+        -------
+        None.
+
+        '''
         self.avg_measurment = 1000
         self.sensor_idn = 'Simulation'
         #print('Initialized')
@@ -143,6 +180,19 @@ class pm100:
             sleep(1)
         print("New zero value: %.6E"%(self.power_meter.sense.correction.collect.zero.magnitude))
     def set_correction_wavelength(self,wl):
+        '''
+        Will apply a wavelength correction if needed.
+
+        Parameters
+        ----------
+        wl : FLOAT
+            Wavelength.
+
+        Returns
+        -------
+        None.
+
+        '''
         print("current correction wavelength %f"%self.power_meter.sense.correction.wavelength)
         self.power_meter.sense.correction.wavelength = wl
         print("New correction wavelength set to %f"%self.power_meter.sense.correction.wavelength)
@@ -163,6 +213,16 @@ class pm100:
         return self.avg(vals)
 
     def close(self):
+        '''
+        We recommend using the with ... as ...: statement, but if needed
+        one can use this function to release the hardware at the end of 
+        a script.
+
+        Returns
+        -------
+        None.
+
+        '''
         if self.reasource_manager:
             self.inst.close()
             self.reasource_manager.close() 
@@ -203,12 +263,14 @@ def test_package():
         print("%s:\t%s\t[%s]"%('pyvisa',ThorlabsPM100.__version__,colored('OK')))
     except:
         print("%s:\tNot installed\t[%s]"%('ThorlabsPM100',colored('NOK',c='red')))
+        
 def help():
     print('\t:::: pm100 Helper ::::\n\n')
     print('\t\t--help: current help')
     print('\t\t--read: make a power readout with pm100.')
     print('\t\t--test-hardware: Test the hardware')
     print('\t\t--test-package: Test the required python package')
+    
 def test_hardware():
     from ThorlabsPM100 import ThorlabsPM100
     rm = pyvisa.ResourceManager()
@@ -237,7 +299,9 @@ def test_hardware():
     inst.close()
     rm.close()
     return
+
 if __name__=="__main__":
+    
     args = argument()
     if '--help' in args:
         help()

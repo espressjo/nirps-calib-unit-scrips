@@ -86,7 +86,7 @@ class beckoff():
 
         '''
         if self.simul:
-            print('Selector %d is at %d'%(sNb,self.selector_simul_pos))
+            print('Selector %d is at %f'%(sNb,self.selector_simul_pos))
             return self.selector_simul_pos
         val1 = self.beck.get_node("ns=4; s=%s"%(self.selector_node%sNb)).get_value()
         out = str(val1).strip()
@@ -184,6 +184,41 @@ class beckoff():
         if filter_nb!=1 and filter_nb!=2:
             print("filter_nb must be 1 or 2")
             return
+
+        
+        #Modif!!!!!
+        #We want to check if the motors are initialized before moving motor
+        node_bInitialized = 'MAIN.Filter%d.stat.bInitialised'
+        node_bExecute = 'MAIN.Filter%d.ctrl.bExecute'
+        node_bEnabled = 'MAIN.Filter%d.stat.bEnabled'
+        node_bEnable_ctrl = 'MAIN.Filter%d.ctrl.bEnable'
+        node_nCommand = 'MAIN.Filter%d.ctrl.nCommand'
+        
+        #self.node_bInitialized_selector = 'MAIN.Selector%d.stat.bInitialised'
+        #self.node_bEnabled_selector = 'MAIN.Selector%d.stat.bEnabled'
+        #self.node_bEnable_selector_ctrl = 'MAIN.Selector%d.ctrl.bEnable'
+            
+        #check if motor is enable
+        val1 = self.beck.get_node("ns=4; s=%s"%(node_bEnabled%filter_nb)).get_value()
+        out = str(val1).strip()
+        if int(out)!=1:#if not...
+            dv = ua.DataValue(ua.Variant(float(1), ua.VariantType.Double))
+            var = self.beck.get_node("ns=4;  s=%s"%(node_bEnable_ctrl%filter_nb))
+            var.set_data_value(dv)
+            
+        #check if motor is inititalize
+        val1 = self.beck.get_node("ns=4; s=%s"%(node_bInitialized%filter_nb)).get_value()
+        out = str(val1).strip()
+        if int(out)!=1:#if not...
+            dv = ua.DataValue(ua.Variant(int(1), ua.VariantType.Int32))
+            var = self.beck.get_node("ns=4;  s=%s"%(node_nCommand%filter_nb))
+            var.set_data_value(dv)
+        
+            dv = ua.DataValue(ua.Variant(float(1), ua.VariantType.Boolean))
+            var = self.beck.get_node("ns=4;  s=%s"%(node_bExecute%filter_nb))
+            var.set_data_value(dv)            
+        #fin modif
+        
         
         dv = ua.DataValue(ua.Variant(float(pos), ua.VariantType.Double))
         var = self.beck.get_node("ns=4;  s=%s"%(self.node_lr_position%filter_nb))
@@ -210,6 +245,75 @@ class beckoff():
         print("The position ask is %f"%pos)
         print("Position %f reached in %fs."%(rpos,timer))
         return rpos
+    def open_tungsten(self):
+        '''
+        Close the thungsten lamp
+        Returns
+        -------
+        None.
+
+        '''
+        node_bInitialized = 'MAIN.Tungsten1.stat.bInitialised'
+        node_nCommand = 'MAIN.Tungsten1.ctrl.nCommand' 
+        node_bExecute = 'MAIN.Tungsten1.ctrl.bExecute'
+        
+        #check if motor is inititalize
+        print('Checking if tungsten lamp is initialized')
+        val1 = self.beck.get_node("ns=4; s=%s"%(node_bInitialized)).get_value()
+        out = str(val1).strip()
+        if int(out)!=1:#if not...
+            print('Initializing tungsten lamp.')
+            dv = ua.DataValue(ua.Variant(int(1), ua.VariantType.Int32))
+            var = self.beck.get_node("ns=4;  s=%s"%(node_nCommand))
+            var.set_data_value(dv)
+        
+            dv = ua.DataValue(ua.Variant(float(1), ua.VariantType.Boolean))
+            var = self.beck.get_node("ns=4;  s=%s"%(node_bExecute))
+            var.set_data_value(dv)
+        #we open the lamp
+        print('Opening tungsten lamp.')
+        dv = ua.DataValue(ua.Variant(int(3), ua.VariantType.Int32))
+        var = self.beck.get_node("ns=4;  s=%s"%(node_nCommand))
+        var.set_data_value(dv)
+    
+        dv = ua.DataValue(ua.Variant(float(1), ua.VariantType.Boolean))
+        var = self.beck.get_node("ns=4;  s=%s"%(node_bExecute))
+        var.set_data_value(dv)
+        print('done')
+    def close_tungsten(self):
+        '''
+        Close the thungsten lamp
+
+        Returns
+        -------
+        None.
+        '''
+        node_bInitialized = 'MAIN.Tungsten1.stat.bInitialised'
+        node_nCommand = 'MAIN.Tungsten1.ctrl.nCommand' 
+        node_bExecute = 'MAIN.Tungsten1.ctrl.bExecute'
+        print('Checking if tungsten lamp is initialized')
+        #check if motor is inititalize
+        val1 = self.beck.get_node("ns=4; s=%s"%(node_bInitialized)).get_value()
+        out = str(val1).strip()
+        if int(out)!=1:#if not...
+            print('Initializing tungsten lamp.')
+            dv = ua.DataValue(ua.Variant(int(1), ua.VariantType.Int32))
+            var = self.beck.get_node("ns=4;  s=%s"%(node_nCommand))
+            var.set_data_value(dv)
+        
+            dv = ua.DataValue(ua.Variant(float(1), ua.VariantType.Boolean))
+            var = self.beck.get_node("ns=4;  s=%s"%(node_bExecute))
+            var.set_data_value(dv)
+        #we close the lamp
+        print('Opening tungsten lamp.')
+        dv = ua.DataValue(ua.Variant(int(2), ua.VariantType.Int32))
+        var = self.beck.get_node("ns=4;  s=%s"%(node_nCommand))
+        var.set_data_value(dv)
+    
+        dv = ua.DataValue(ua.Variant(float(1), ua.VariantType.Boolean))
+        var = self.beck.get_node("ns=4;  s=%s"%(node_bExecute))
+        var.set_data_value(dv)        
+        print('done')
     def set_selector(self,selector,pos):
         '''
         Set a ND filter to position
@@ -228,14 +332,48 @@ class beckoff():
             
         '''
         if self.simul:
-            print('Setting selector %d position at %d'%(selector,pos))
+            print('Setting selector %d position at %f'%(selector,pos))
             sleep(2)
             self.selector_simul_pos = pos
-            print('Selector %d reached position %d'%(selector,pos))
+            print('Selector %d reached position %f'%(selector,pos))
             return self.selector_simul_pos
         if selector!=1 and selector!=2:
             print("filter_nb must be 1 or 2")
             return
+        
+        #Modif!!!!!
+        #We want to check if the motors are initialized before moving motor
+        node_bInitialized = 'MAIN.Selector%d.stat.bInitialised'
+        node_bExecute = 'MAIN.Selector%d.ctrl.bExecute'
+        node_bEnabled = 'MAIN.Selector%d.stat.bEnabled'
+        node_bEnable_ctrl = 'MAIN.Selector%d.ctrl.bEnable'
+        node_nCommand = 'MAIN.Selector%d.ctrl.nCommand'
+        
+        #self.node_bInitialized_selector = 'MAIN.Selector%d.stat.bInitialised'
+        #self.node_bEnabled_selector = 'MAIN.Selector%d.stat.bEnabled'
+        #self.node_bEnable_selector_ctrl = 'MAIN.Selector%d.ctrl.bEnable'
+            
+        #check if motor is enable
+        val1 = self.beck.get_node("ns=4; s=%s"%(node_bEnabled%selector)).get_value()
+        out = str(val1).strip()
+        if int(out)!=1:#if not...
+            dv = ua.DataValue(ua.Variant(float(1), ua.VariantType.Double))
+            var = self.beck.get_node("ns=4;  s=%s"%(node_bEnable_ctrl%selector))
+            var.set_data_value(dv)
+            
+        #check if motor is inititalize
+        val1 = self.beck.get_node("ns=4; s=%s"%(node_bInitialized%selector)).get_value()
+        out = str(val1).strip()
+        if int(out)!=1:#if not...
+            dv = ua.DataValue(ua.Variant(int(1), ua.VariantType.Int32))
+            var = self.beck.get_node("ns=4;  s=%s"%(node_nCommand%selector))
+            var.set_data_value(dv)
+        
+            dv = ua.DataValue(ua.Variant(float(1), ua.VariantType.Boolean))
+            var = self.beck.get_node("ns=4;  s=%s"%(node_bExecute%selector))
+            var.set_data_value(dv)            
+        #fin modif
+        
         
         dv = ua.DataValue(ua.Variant(float(pos), ua.VariantType.Double))
         var = self.beck.get_node("ns=4;  s=%s"%(self.node_select_lrposition%selector))
@@ -297,6 +435,8 @@ def help():
     print('\t--port: set PLC communication port for this script.')
     print('\t--test-hardware: test if we can connect to beckoff PLC hardware.')
     print('\t--plc-simul: run in simulation')
+    print('\t--open-tungsten: open tungsten lamp')
+    print('\t--close-tungsten: open tungsten lamp')
 def get_args_conf():
     '''
     Will check if an argument for port and ip is set, then
@@ -397,4 +537,11 @@ if '__main__' in __name__:
     elif all(['--nd-filter2' in args,'--get-position' in args]):
         with beckoff(ip,port=p,hwsimul=simul) as beck:
             print(beck.get_ndfilter(2))
+    elif '--open-tungsten' in args:
+        with beckoff(ip,port=p,hwsimul=simul) as beck:
+            beck.open_tungsten()
+    elif '--close-tungsten' in args:
+        with beckoff(ip,port=p,hwsimul=simul) as beck:
+            beck.close_tungsten()
+    
     

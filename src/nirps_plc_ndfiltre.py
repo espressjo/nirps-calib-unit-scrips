@@ -253,6 +253,9 @@ class beckoff():
         None.
 
         '''
+        if self.simul:
+            print('Tungsten opened')
+            return
         node_bInitialized = 'MAIN.Tungsten1.stat.bInitialised'
         node_nCommand = 'MAIN.Tungsten1.ctrl.nCommand' 
         node_bExecute = 'MAIN.Tungsten1.ctrl.bExecute'
@@ -288,6 +291,9 @@ class beckoff():
         -------
         None.
         '''
+        if self.simul:
+            print('Tungsten closed')
+            return
         node_bInitialized = 'MAIN.Tungsten1.stat.bInitialised'
         node_nCommand = 'MAIN.Tungsten1.ctrl.nCommand' 
         node_bExecute = 'MAIN.Tungsten1.ctrl.bExecute'

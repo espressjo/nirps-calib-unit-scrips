@@ -24,7 +24,7 @@ class cfgfile:
         self.cfg['nb-read'] = 5
         self.cfg['selector-inc'] = 40
         self.cfg['beckoff-ip'] = '134.171.102.126'
-                
+        self.cfg['beckoff-port'] = 4840
         if not os.path.isfile(self.lfile):
             print('No configuration file found. Default values will be used.')
             return 
@@ -67,53 +67,71 @@ class cfgfile:
     def __str__(self):
         STR = ["%s %s\n"%(h,str(self.cfg[h])) for h in self.cfg]
         return "".join(STR)
-class nd_filter_log:
-    def __init__(self,):
-        
-        self.dtfmt = "%Y-%m-%dT%H:%M:%S"
-        self.lffmt = "ND-filter-log-%Y%m%d%H%M%S.csv"
+class nd_log:
+    def __init__(self,ndfilter_nb):
+        self.fmt = "%Y%m%d%H%M%S"
+        if ndfilter_nb<1 or ndfilter_nb>2:
+            print('ndfilter_nb must be 1 or 2')
+        self.nd = ndfilter_nb
+        self.make_file()#create the log file with header
+    def make_file(self):
         cfg = cfgfile()
-        self.path = cfg.cfg['logpath']
-        if not os.path.isdir(self.path):
-            print("path: %s does not exist. No log will be saved."%self.path)
-        self.lfile = datetime.now().strftime(self.lffmt)
-        self.make_header()
-        print("Log will be saved here: %s"%(os.path.join(self.path,self.lfile)))
-    def log_selector_1_flux(self,pos,f):
-        with open(os.path.join(self.path,self.lfile),'a') as ff:
-            ff.write("%s,%s,%s,%s,%s,%s\n"%(datetime.now().strftime(self.dtfmt),
-                                           datetime.utcnow().strftime(self.dtfmt),
-                                           str(pos),
-                                           '--',
-                                           str(f),
-                                           '--'))
-    def log_selector_2_flux(self,pos,f):
-        with open(os.path.join(self.path,self.lfile),'a') as ff:
-            ff.write("%s,%s,%s,%s,%s,%s\n"%(datetime.now().strftime(self.dtfmt),
-                                           datetime.utcnow().strftime(self.dtfmt),
-                                           '--',
-                                           str(pos),
-                                           str(f),
-                                           '--'))
-    def log_selector_1_det(self,pos,f):
-        with open(os.path.join(self.path,self.lfile),'a') as ff:
-            ff.write("%s,%s,%s,%s,%s,%s\n"%(datetime.now().strftime(self.dtfmt),
-                                           datetime.utcnow().strftime(self.dtfmt),
-                                           str(pos),
-                                           '--',
-                                           '--',
-                                           str(f)))   
-    def log_selector_2_det(self,pos,f):
-        with open(os.path.join(self.path,self.lfile),'a') as ff:
-            ff.write("%s,%s,%s,%s,%s,%s\n"%(datetime.now().strftime(self.dtfmt),
-                                           datetime.utcnow().strftime(self.dtfmt),
-                                           '--',
-                                           str(pos),
-                                           '--',
-                                           str(f)))
-    def make_header(self):
-        with open(os.path.join(self.path,self.lfile),'w') as f:
-            f.write('Datetime(local),Datetime(UTC),Position_select_1,Position_select_2,Flux,UID\n')
+        p = cfg['logpath']
+        self.fname = "ndfilter%d.%s.csv"%(self.nd,datetime.now().strftime(self.fmt))
+        self.fname = os.path.join(p,self.fname)
+        with open(self.fname,'a') as f:
+            f.write('position,flux\n')
+        return self.fname
+    def log(self,pos,flux):
+        with open(self.fname,'a') as f:
+            f.write('%d,%f\n'%(pos,flux)) 
+# class nd_filter_log:
+#     def __init__(self,):
+        
+#         self.dtfmt = "%Y-%m-%dT%H:%M:%S"
+#         self.lffmt = "ND-filter-log-%Y%m%d%H%M%S.csv"
+#         cfg = cfgfile()
+#         self.path = cfg.cfg['logpath']
+#         if not os.path.isdir(self.path):
+#             print("path: %s does not exist. No log will be saved."%self.path)
+#         self.lfile = datetime.now().strftime(self.lffmt)
+#         self.make_header()
+#         print("Log will be saved here: %s"%(os.path.join(self.path,self.lfile)))
+#     def log_selector_1_flux(self,pos,f):
+#         with open(os.path.join(self.path,self.lfile),'a') as ff:
+#             ff.write("%s,%s,%s,%s,%s,%s\n"%(datetime.now().strftime(self.dtfmt),
+#                                            datetime.utcnow().strftime(self.dtfmt),
+#                                            str(pos),
+#                                            '--',
+#                                            str(f),
+#                                            '--'))
+#     def log_selector_2_flux(self,pos,f):
+#         with open(os.path.join(self.path,self.lfile),'a') as ff:
+#             ff.write("%s,%s,%s,%s,%s,%s\n"%(datetime.now().strftime(self.dtfmt),
+#                                            datetime.utcnow().strftime(self.dtfmt),
+#                                            '--',
+#                                            str(pos),
+#                                            str(f),
+#                                            '--'))
+#     def log_selector_1_det(self,pos,f):
+#         with open(os.path.join(self.path,self.lfile),'a') as ff:
+#             ff.write("%s,%s,%s,%s,%s,%s\n"%(datetime.now().strftime(self.dtfmt),
+#                                            datetime.utcnow().strftime(self.dtfmt),
+#                                            str(pos),
+#                                            '--',
+#                                            '--',
+#                                            str(f)))   
+#     def log_selector_2_det(self,pos,f):
+#         with open(os.path.join(self.path,self.lfile),'a') as ff:
+#             ff.write("%s,%s,%s,%s,%s,%s\n"%(datetime.now().strftime(self.dtfmt),
+#                                            datetime.utcnow().strftime(self.dtfmt),
+#                                            '--',
+#                                            str(pos),
+#                                            '--',
+#                                            str(f)))
+#     def make_header(self):
+#         with open(os.path.join(self.path,self.lfile),'w') as f:
+#             f.write('Datetime(local),Datetime(UTC),Position_select_1,Position_select_2,Flux,UID\n')
             
 if '__main__' in __name__:
     cfg = cfgfile()

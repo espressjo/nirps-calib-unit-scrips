@@ -394,10 +394,10 @@ class beckoff():
         var.set_data_value(dv)        
         sleep(10)   
         timer = 0
-        for i in range(60):
+        for i in range(120):#2minutes timeout
             sleep(1)
             timer+=0
-            if abs(self.get_selector(selector)-pos)<1:
+            if abs(self.get_selector(selector)-pos)<0.01:
                 sleep(5)
                 timer+=5
                 break

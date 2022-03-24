@@ -370,7 +370,7 @@ class beckoff():
         #check if motor is inititalize
         val1 = self.beck.get_node("ns=4; s=%s"%(node_bInitialized%selector)).get_value()
         out = str(val1).strip()
-        if int(out)!=1:#if not...
+        if 'True' not in out:#if not...
             dv = ua.DataValue(ua.Variant(int(1), ua.VariantType.Int32))
             var = self.beck.get_node("ns=4;  s=%s"%(node_nCommand%selector))
             var.set_data_value(dv)

@@ -234,12 +234,14 @@ class beckoff():
                
         #check if position is reached
         timer = 0
-        for i in range(60):
+        for i in range(240):
+            if i%30==0:
+                print('Timeout in %.1f seconds'%(240-i))
             sleep(1)
             timer+=1
-            if (abs(self.get_ndfilter(filter_nb)-pos)<1):
-                sleep(5)#to be really sure we reached the position, we could tune (<1) and this sleep
-                timer+=5
+            if (abs(self.get_ndfilter(filter_nb)-pos)<0.1):
+                sleep(10)#to be really sure we reached the position, we could tune (<1) and this sleep
+                timer+=10
                 break
         rpos = self.get_ndfilter(filter_nb)
         print("The position ask is %f"%pos)

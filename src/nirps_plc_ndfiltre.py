@@ -201,7 +201,7 @@ class beckoff():
         #check if motor is enable
         val1 = self.beck.get_node("ns=4; s=%s"%(node_bEnabled%filter_nb)).get_value()
         out = str(val1).strip()
-        if int(out)!=1:#if not...
+        if 'True' not in out:#if not...
             dv = ua.DataValue(ua.Variant(float(1), ua.VariantType.Double))
             var = self.beck.get_node("ns=4;  s=%s"%(node_bEnable_ctrl%filter_nb))
             var.set_data_value(dv)
@@ -209,7 +209,7 @@ class beckoff():
         #check if motor is inititalize
         val1 = self.beck.get_node("ns=4; s=%s"%(node_bInitialized%filter_nb)).get_value()
         out = str(val1).strip()
-        if int(out)!=1:#if not...
+        if 'True' not in out:#if not...
             dv = ua.DataValue(ua.Variant(int(1), ua.VariantType.Int32))
             var = self.beck.get_node("ns=4;  s=%s"%(node_nCommand%filter_nb))
             var.set_data_value(dv)
@@ -237,11 +237,11 @@ class beckoff():
         for i in range(60):
             sleep(1)
             timer+=1
-            if (abs(self.read_NDFilter(filter_nb)-pos)<1):
+            if (abs(self.get_ndfilter(filter_nb)-pos)<1):
                 sleep(5)#to be really sure we reached the position, we could tune (<1) and this sleep
                 timer+=5
                 break
-        rpos = self.read_NDFilter(filter_nb)
+        rpos = self.get_ndfilter(filter_nb)
         print("The position ask is %f"%pos)
         print("Position %f reached in %fs."%(rpos,timer))
         return rpos
@@ -264,7 +264,7 @@ class beckoff():
         print('Checking if tungsten lamp is initialized')
         val1 = self.beck.get_node("ns=4; s=%s"%(node_bInitialized)).get_value()
         out = str(val1).strip()
-        if int(out)!=1:#if not...
+        if 'True' not in out:#if not...
             print('Initializing tungsten lamp.')
             dv = ua.DataValue(ua.Variant(int(1), ua.VariantType.Int32))
             var = self.beck.get_node("ns=4;  s=%s"%(node_nCommand))
@@ -301,7 +301,7 @@ class beckoff():
         #check if motor is inititalize
         val1 = self.beck.get_node("ns=4; s=%s"%(node_bInitialized)).get_value()
         out = str(val1).strip()
-        if int(out)!=1:#if not...
+        if 'True' not in out:#if not...
             print('Initializing tungsten lamp.')
             dv = ua.DataValue(ua.Variant(int(1), ua.VariantType.Int32))
             var = self.beck.get_node("ns=4;  s=%s"%(node_nCommand))
@@ -397,11 +397,11 @@ class beckoff():
         for i in range(60):
             sleep(1)
             timer+=0
-            if abs(self.selector_position(selector)-pos)<1:
+            if abs(self.get_selector(selector)-pos)<1:
                 sleep(5)
                 timer+=5
                 break
-        rpos = self.selector_position(selector)
+        rpos = self.get_selector(selector)
         print("The position ask is %f"%pos)
         print("Position %f reached in %fs."%(rpos,timer))
         return rpos

@@ -362,7 +362,7 @@ class beckoff():
         #check if motor is enable
         val1 = self.beck.get_node("ns=4; s=%s"%(node_bEnabled%selector)).get_value()
         out = str(val1).strip()
-        if int(out)!=1:#if not...
+        if 'True' not in out:#if not...
             dv = ua.DataValue(ua.Variant(float(1), ua.VariantType.Double))
             var = self.beck.get_node("ns=4;  s=%s"%(node_bEnable_ctrl%selector))
             var.set_data_value(dv)

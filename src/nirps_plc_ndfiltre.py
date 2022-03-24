@@ -393,11 +393,13 @@ class beckoff():
         var = self.beck.get_node("ns=4;  s=%s"%(self.node_select_bExecute%selector))
         var.set_data_value(dv)        
         sleep(10)   
-        timer = 0
-        for i in range(120):#2minutes timeout
+        timer = 10
+        for i in range(240):#2minutes timeout
+            if i%30==0:
+                print('timeout in %.1f seconds'%(240-timer))
             sleep(1)
-            timer+=0
-            if abs(self.get_selector(selector)-pos)<0.01:
+            timer+=1
+            if abs(self.get_selector(selector)-pos)<0.001:
                 sleep(5)
                 timer+=5
                 break

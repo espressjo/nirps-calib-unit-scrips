@@ -11,7 +11,7 @@ import traceback
 from time import sleep 
 from sys import argv
 from ndfilterlog import cfgfile
-
+#
 class argument:
     '''
     Small class the reads up the command line argument. 
@@ -351,7 +351,18 @@ class beckoff():
             dv = ua.DataValue(ua.Variant(float(1), ua.VariantType.Boolean))
             var = self.beck.get_node("ns=4;  s=%s"%(node_bExecute))
             var.set_data_value(dv)
+        #set some config
+        #cfg.nAnalogThreshold = 1
+        dv = ua.DataValue(ua.Variant(int(1), ua.VariantType.Int32))
+        var = self.beck.get_node("ns=4;  s=%s"%("MAIN.Tungsten1.cfg.nAnalogThreshold"))
+        var.set_data_value(dv)
+        
+        dv = ua.DataValue(ua.Variant(int(0), ua.VariantType.Int32))
+        var = self.beck.get_node("ns=4;  s=%s"%("MAIN.Tungsten1.cfg.nMaxOn"))
+        var.set_data_value(dv)
+        
         #we open the lamp
+        
         print('Opening tungsten lamp.')
         dv = ua.DataValue(ua.Variant(int(3), ua.VariantType.Int32))
         var = self.beck.get_node("ns=4;  s=%s"%(node_nCommand))

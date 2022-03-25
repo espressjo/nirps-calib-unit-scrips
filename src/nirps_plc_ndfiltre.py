@@ -508,7 +508,7 @@ class beckoff():
         node_bExecute = 'MAIN.Selector%d.ctrl.bExecute'
         node_bEnabled = 'MAIN.Selector%d.stat.bEnabled'
         node_bEnable_ctrl = 'MAIN.Selector%d.ctrl.bEnable'
-        node_nCommand = 'MAIN.Selector%d.ctrl.nCommand'
+        node_nCommand =     'MAIN.Selector%d.ctrl.nCommand'
         
         #self.node_bInitialized_selector = 'MAIN.Selector%d.stat.bInitialised'
         #self.node_bEnabled_selector = 'MAIN.Selector%d.stat.bEnabled'
@@ -517,6 +517,7 @@ class beckoff():
         #check if motor is enable
         val1 = self.beck.get_node("ns=4; s=%s"%(node_bEnabled%selector)).get_value()
         out = str(val1).strip()
+        
         if 'True' not in out:#if not...
             dv = ua.DataValue(ua.Variant(True, ua.VariantType.Boolean))
             var = self.beck.get_node("ns=4;  s=%s"%(node_bEnable_ctrl%selector))
@@ -530,10 +531,11 @@ class beckoff():
             dv = ua.DataValue(ua.Variant(int(1), ua.VariantType.Int32))
             var = self.beck.get_node("ns=4;  s=%s"%(node_nCommand%selector))
             var.set_data_value(dv)
-        
+            sleep(3)
             dv = ua.DataValue(ua.Variant(True, ua.VariantType.Boolean))
             var = self.beck.get_node("ns=4;  s=%s"%(node_bExecute%selector))
-            var.set_data_value(dv)            
+            var.set_data_value(dv)
+            sleep(3)            
         #fin modif
         
         

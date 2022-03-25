@@ -247,6 +247,82 @@ class beckoff():
         print("The position ask is %f"%pos)
         print("Position %f reached in %fs."%(rpos,timer))
         return rpos
+    def set_ndfilter_velocity(self,filter_nb):
+        '''
+        Set a ND filter velocity. 
+
+        Parameters
+        ----------
+        filter_nb : INT
+            ND filter number.
+        Returns
+        -------
+        INT
+            position display in PLC
+
+        '''
+        if self.simul:
+            print('Setting ND filter %d velocity to %d '%(filter_nb,10))
+            sleep(2)
+            
+            print('Velocity set')
+            return 
+        if filter_nb!=1 and filter_nb!=2:
+            print("filter_nb must be 1 or 2")
+            return
+
+        
+        #Modif!!!!!
+        #We want to check if the motors are initialized before moving motor
+        node_bInitialized = 'MAIN.Filter%d.stat.bInitialised'
+        node_bExecute = 'MAIN.Filter%d.ctrl.bExecute'
+        node_bEnabled = 'MAIN.Filter%d.stat.bEnabled'
+        node_bEnable_ctrl = 'MAIN.Filter%d.ctrl.bEnable'
+        node_nCommand = 'MAIN.Filter%d.ctrl.nCommand'
+        
+        #self.node_bInitialized_selector = 'MAIN.Selector%d.stat.bInitialised'
+        #self.node_bEnabled_selector = 'MAIN.Selector%d.stat.bEnabled'
+        #self.node_bEnable_selector_ctrl = 'MAIN.Selector%d.ctrl.bEnable'
+            
+        #check if motor is enable
+        val1 = self.beck.get_node("ns=4; s=%s"%(node_bEnabled%filter_nb)).get_value()
+        out = str(val1).strip()
+        if 'True' not in out:#if not...
+            dv = ua.DataValue(ua.Variant(float(1), ua.VariantType.Double))
+            var = self.beck.get_node("ns=4;  s=%s"%(node_bEnable_ctrl%filter_nb))
+            var.set_data_value(dv)
+            
+        #check if motor is inititalize
+        val1 = self.beck.get_node("ns=4; s=%s"%(node_bInitialized%filter_nb)).get_value()
+        out = str(val1).strip()
+        if 'True' not in out:#if not...
+            dv = ua.DataValue(ua.Variant(int(1), ua.VariantType.Int32))
+            var = self.beck.get_node("ns=4;  s=%s"%(node_nCommand%filter_nb))
+            var.set_data_value(dv)
+        
+            dv = ua.DataValue(ua.Variant(float(1), ua.VariantType.Boolean))
+            var = self.beck.get_node("ns=4;  s=%s"%(node_bExecute%filter_nb))
+            var.set_data_value(dv)            
+        #fin modif
+        
+        
+        dv = ua.DataValue(ua.Variant(float(10), ua.VariantType.Double))
+        var = self.beck.get_node("ns=4;  s=%s"%("MAIN.Filter%d.ctrl.lrVelocity"%filter_nb))
+        var.set_data_value(dv)
+        
+        dv = ua.DataValue(ua.Variant(int(3), ua.VariantType.Int32))
+        var = self.beck.get_node("ns=4;  s=%s"%(self.node_nCommand%filter_nb))
+        var.set_data_value(dv)
+        
+        dv = ua.DataValue(ua.Variant(float(1), ua.VariantType.Boolean))
+        var = self.beck.get_node("ns=4;  s=%s"%(self.node_bExecute%filter_nb))
+        var.set_data_value(dv)        
+               
+        #check if position is reached
+        sleep(10)
+        
+        print("Velocity Set")
+        return 
     def open_tungsten(self):
         '''
         Close the thungsten lamp
@@ -322,6 +398,72 @@ class beckoff():
         var = self.beck.get_node("ns=4;  s=%s"%(node_bExecute))
         var.set_data_value(dv)        
         print('done')
+    def set_selector_velocity(self,selector):
+        '''
+        Set a selector velocity
+
+        Parameters
+        ----------
+        selector : INT
+            Selector number.
+
+        Returns
+        -------
+        INT
+            Selector position display in PLC
+            
+        '''#MAIN.Selector%d.ctrl.lrVelocity =5
+        if self.simul:
+            print('Setting selector %d velocity at %f'%(selector,5))
+            sleep(2)
+            return 
+        if selector!=1 and selector!=2:
+            print("filter_nb must be 1 or 2")
+            return
+        
+        #Modif!!!!!
+        #We want to check if the motors are initialized before moving motor
+        node_bInitialized = 'MAIN.Selector%d.stat.bInitialised'
+        node_bExecute = 'MAIN.Selector%d.ctrl.bExecute'
+        node_bEnabled = 'MAIN.Selector%d.stat.bEnabled'
+        node_bEnable_ctrl = 'MAIN.Selector%d.ctrl.bEnable'
+        node_nCommand = 'MAIN.Selector%d.ctrl.nCommand'            
+        #check if motor is enable
+        val1 = self.beck.get_node("ns=4; s=%s"%(node_bEnabled%selector)).get_value()
+        out = str(val1).strip()
+        if 'True' not in out:#if not...
+            dv = ua.DataValue(ua.Variant(float(1), ua.VariantType.Double))
+            var = self.beck.get_node("ns=4;  s=%s"%(node_bEnable_ctrl%selector))
+            var.set_data_value(dv)
+            
+        #check if motor is inititalize
+        val1 = self.beck.get_node("ns=4; s=%s"%(node_bInitialized%selector)).get_value()
+        out = str(val1).strip()
+        if 'True' not in out:#if not...
+            dv = ua.DataValue(ua.Variant(int(1), ua.VariantType.Int32))
+            var = self.beck.get_node("ns=4;  s=%s"%(node_nCommand%selector))
+            var.set_data_value(dv)
+        
+            dv = ua.DataValue(ua.Variant(float(1), ua.VariantType.Boolean))
+            var = self.beck.get_node("ns=4;  s=%s"%(node_bExecute%selector))
+            var.set_data_value(dv)            
+        #fin modif
+        
+        
+        dv = ua.DataValue(ua.Variant(float(5), ua.VariantType.Double))
+        var = self.beck.get_node("ns=4;  s=%s"%("MAIN.Selector%d.ctrl.lrVelocity"%selector))
+        var.set_data_value(dv)
+        
+        dv = ua.DataValue(ua.Variant(int(3), ua.VariantType.Int32))
+        var = self.beck.get_node("ns=4;  s=%s"%(self.node_select_nCommand%selector))
+        var.set_data_value(dv)
+        
+        dv = ua.DataValue(ua.Variant(float(1), ua.VariantType.Boolean))
+        var = self.beck.get_node("ns=4;  s=%s"%(self.node_select_bExecute%selector))
+        var.set_data_value(dv)        
+        sleep(10)   
+        print("Velocity Set")
+        return 
     def set_selector(self,selector,pos):
         '''
         Set a ND filter to position

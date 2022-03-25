@@ -47,6 +47,7 @@ def mov2pos(selector,pos):
     OK = True
     print("Target position is %f"%pos)
     with beckoff(ip,hwsimul=simul,port=port) as beck:
+        beck.set_selector_velocity(selector)
         while(OK):
             beck.set_selector(selector, pos)
             newpos = beck.get_selector(selector)
@@ -57,6 +58,7 @@ def run(select,start,stop,steps,position_name):
     lname = make_name(select,start,stop,steps,position_name)#create the log
     from pm100 import pm100
     with beckoff(ip,hwsimul=simul,port=port) as beck:
+        
         with pm100(simulation=simul) as pm100:
             for p in positions:
                 beck.set_selector(select, p)

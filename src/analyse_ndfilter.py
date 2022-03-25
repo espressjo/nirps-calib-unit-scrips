@@ -15,32 +15,32 @@ from os.path import join,basename
 import pandas as pd
 from datetime import datetime
 import numpy as np
-
-class argument:
-    '''
-    Small class the reads up the command line argument. 
-    Ex: 
-        args = argument()
-        if '--path' in args:
-            path = args['--path']
-    '''
-    def __init__(self):
-        self.items = {}
-        for arg in argv:
-            if '=' in arg:
-                self.items[arg.split('=')[0]] = arg.split('=')[1]
-            else:
-                self.items[arg] = 'Null'
-    def __contains__(self, item):
-        return item in self.items
-    def __getitem__(self, item):
-        if item in self.items:
-            return self.items[item]
-        else:
-            None
-    def __str__(self):
-        l = ["%s: %s"%(arg,self.items[arg]) if self.items[arg]!='Null' else "%s"%arg for arg in self.items]
-        return "\n".join(l)  
+from arguments import argument
+# class argument:
+#     '''
+#     Small class the reads up the command line argument. 
+#     Ex: 
+#         args = argument()
+#         if '--path' in args:
+#             path = args['--path']
+#     '''
+#     def __init__(self):
+#         self.items = {}
+#         for arg in argv:
+#             if '=' in arg:
+#                 self.items[arg.split('=')[0]] = arg.split('=')[1]
+#             else:
+#                 self.items[arg] = 'Null'
+#     def __contains__(self, item):
+#         return item in self.items
+#     def __getitem__(self, item):
+#         if item in self.items:
+#             return self.items[item]
+#         else:
+#             None
+#     def __str__(self):
+#         l = ["%s: %s"%(arg,self.items[arg]) if self.items[arg]!='Null' else "%s"%arg for arg in self.items]
+#         return "\n".join(l)  
     
 def ls_data():
     #return a list of all the ndfilter log from oldest to newest
@@ -65,6 +65,7 @@ def help():
     print('Script HELP!!')
     print('\t--list-data: lost all data')
     print('\t--plot-last: plot last log file')
+    print('\t--plot: plot given log')
 def get_info(fname):
     return basename(fname).split('.')[0].replace('ndfilter','')
 def plot_filtred_flux(file):#f0 = 92705,f1 = 92960
@@ -159,3 +160,9 @@ if '__main__' in __name__:
         f = get_last()
         plot_filtred_flux(f)
         plot_fit(f)
+    if '--plot' in args:
+        cfg = cfgfile()
+        lpath = cfg['logpath']
+        ff = args['--plot']
+        plot_filtred_flux(join(lpath,ff))
+        plot_fit(join(lpath,ff))

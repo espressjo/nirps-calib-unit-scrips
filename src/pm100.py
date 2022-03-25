@@ -66,6 +66,7 @@ class pm100:
         self.avg_measurment = 1000
         self.lfrequency = 50
         cfg = cfgfile()
+        self.sim = simulation
         if 'pm100-avg' in cfg:
             self.avg_measurment = cfg['pm100-avg']
         self.sensor_idn = 'Unknown' #ID of the sensor plugged in
@@ -80,6 +81,7 @@ class pm100:
         else:
             self.init()
             self.measure = self._measure #main method measure()/return a float
+            
 
         
     def init(self):
@@ -137,6 +139,8 @@ class pm100:
         None.
 
         '''
+        if self.sim:
+            return
         if 'ON' in state:
             self.power_meter.input.pdiode.filter.lpass.state =1
         else:
@@ -171,6 +175,9 @@ class pm100:
         None.
 
         '''
+        if self.sim:
+            print("New zero value: %1.23E-10")
+            return 
         from time import sleep
         print("Current zero value: %.6E"%(self.power_meter.sense.correction.collect.zero.magnitude))
         print("Starting zero adjust, this may take a few seconds.")
@@ -193,6 +200,9 @@ class pm100:
         None.
 
         '''
+        if self.sim:
+            print("New correction wavelength set to %f"%1552.1)
+            return
         print("current correction wavelength %f"%self.power_meter.sense.correction.wavelength)
         self.power_meter.sense.correction.wavelength = wl
         print("New correction wavelength set to %f"%self.power_meter.sense.correction.wavelength)
@@ -223,6 +233,8 @@ class pm100:
         None.
 
         '''
+        if self.sim:
+            return
         if self.reasource_manager:
             self.inst.close()
             self.reasource_manager.close() 

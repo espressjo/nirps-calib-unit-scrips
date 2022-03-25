@@ -65,6 +65,7 @@ class beckoff():
         self.node_select_lrposition = 'MAIN.Selector%d.ctrl.lrPosition' #node to change the lrPosition of Filter 1 or 2
         self.node_select_nCommand = 'MAIN.Selector%d.ctrl.nCommand' #node to change the nCommand of Filter 1 or 2
         self.node_select_bExecute = 'MAIN.Selector%d.ctrl.bExecute' #node to change the bExecute of Filter 1 or 2       
+        #                           'MAIN.Selector%d.ctrl.bExecute'
         self.node_actual_pos = 'MAIN.Filter%d.stat.lrPosActual' #node to read a Filter# variable (stat)
         self.node_lr_position = 'MAIN.Filter%d.ctrl.lrPosition' #node to change the lrPosition of Filter 1 or 2
         self.node_nCommand = 'MAIN.Filter%d.ctrl.nCommand' #node to change the nCommand of Filter 1 or 2
@@ -526,7 +527,7 @@ class beckoff():
         #check if motor is inititalize
         val1 = self.beck.get_node("ns=4; s=%s"%(node_bInitialized%selector)).get_value()
         out = str(val1).strip()
-        print(out)
+        
         if 'True' not in out:#if not...
             dv = ua.DataValue(ua.Variant(int(1), ua.VariantType.Int32))
             var = self.beck.get_node("ns=4;  s=%s"%(node_nCommand%selector))
@@ -535,7 +536,14 @@ class beckoff():
             var = self.beck.get_node("ns=4;  s=%s"%(node_bExecute%selector))
             var.set_data_value(dv)
         #fin modif
-        
+        while(True):
+            sleep(1)
+            print('init...')
+            val1 = self.beck.get_node("ns=4; s=%s"%(node_bInitialized%selector)).get_value()
+            out = str(val1).strip()
+            if 'True' in out:
+                break
+            
         
         dv = ua.DataValue(ua.Variant(float(pos), ua.VariantType.Double))
         var = self.beck.get_node("ns=4;  s=%s"%(self.node_select_lrposition%selector))

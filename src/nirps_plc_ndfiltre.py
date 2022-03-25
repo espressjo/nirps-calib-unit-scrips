@@ -505,7 +505,7 @@ class beckoff():
         #Modif!!!!!
         #We want to check if the motors are initialized before moving motor
         node_bInitialized = 'MAIN.Selector%d.stat.bInitialised'
-        node_bExecute = 'MAIN.Selector%d.ctrl.bExecute'
+        node_bExecute =     'MAIN.Selector%d.ctrl.bExecute'
         node_bEnabled = 'MAIN.Selector%d.stat.bEnabled'
         node_bEnable_ctrl = 'MAIN.Selector%d.ctrl.bEnable'
         node_nCommand =     'MAIN.Selector%d.ctrl.nCommand'
@@ -531,11 +531,9 @@ class beckoff():
             dv = ua.DataValue(ua.Variant(int(1), ua.VariantType.Int32))
             var = self.beck.get_node("ns=4;  s=%s"%(node_nCommand%selector))
             var.set_data_value(dv)
-            sleep(3)
-            dv = ua.DataValue(ua.Variant(True, ua.VariantType.Boolean))
+            dv = ua.DataValue(ua.Variant(float(1), ua.VariantType.Boolean))
             var = self.beck.get_node("ns=4;  s=%s"%(node_bExecute%selector))
             var.set_data_value(dv)
-            sleep(3)            
         #fin modif
         
         

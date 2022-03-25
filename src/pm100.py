@@ -104,7 +104,7 @@ class pm100:
             exit()
         for _resource in resources:
             print(_resource)
-        good_resource = [_resource for _resource in resources if all(['USB' in _resource])]
+        good_resource = [_resource for _resource in resources if all(['USB' in _resource,'INST' in _resource])]
         
         if len(good_resource)>1:
             print('More than 1 device found.')

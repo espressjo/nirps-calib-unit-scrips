@@ -19,7 +19,7 @@ args = argument()
 cfg = cfgfile()
 fmt = "%Y%m%d%H%M%S"
 #steps = 100 
-simul = True
+simul = False
 ip = cfg['beckoff-ip']#fetch the ip of the beckoff
 port = cfg['beckoff-port']
 

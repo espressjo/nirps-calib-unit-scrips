@@ -531,7 +531,7 @@ class beckoff():
             var = self.beck.get_node("ns=4;  s=%s"%(node_nCommand%selector))
             var.set_data_value(dv)
         
-            dv = ua.DataValue(ua.Variant(float(1), ua.VariantType.Boolean))
+            dv = ua.DataValue(ua.Variant(True, ua.VariantType.Boolean))
             var = self.beck.get_node("ns=4;  s=%s"%(node_bExecute%selector))
             var.set_data_value(dv)            
         #fin modif

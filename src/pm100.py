@@ -102,7 +102,7 @@ class pm100:
             print("No instrument found. Plug and power UP devices.")
             self.reasource_manager.close() 
             exit()
-        good_resource = [_resource for _resource in resources if all(['USB' in _resource,'INST' in _resource])]
+        good_resource = [_resource for _resource in resources if all(['USB' in _resource])]
         if len(good_resource)>1:
             print('More than 1 device found.')
             [print("(%d) %s"%(i+1,good_resource[i])) for i in range(len(good_resource)) ]

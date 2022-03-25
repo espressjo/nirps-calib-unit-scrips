@@ -600,6 +600,8 @@ def help():
     print('\t--plc-simul: run in simulation')
     print('\t--open-tungsten: open tungsten lamp')
     print('\t--close-tungsten: open tungsten lamp')
+    print('\t--set-speed-selector: set the speed for device')
+    print('\t--set-speed-ndfilter: set the speed for device')
 def get_args_conf():
     '''
     Will check if an argument for port and ip is set, then
@@ -706,5 +708,11 @@ if '__main__' in __name__:
     elif '--close-tungsten' in args:
         with beckoff(ip,port=p,hwsimul=simul) as beck:
             beck.close_tungsten()
+    elif all(['--set-speed-selector' in args]):
+        with beckoff(ip,port=p,hwsimul=simul) as beck:
+            beck.set_selector_velocity(1 if '--selector1' in args else 2)
+    elif all(['--set-speed-ndfilter' in args]):
+        with beckoff(ip,port=p,hwsimul=simul) as beck:
+            beck.set_selector_velocity(1 if '--ndfilter' in args else 2)
     
     

@@ -102,8 +102,7 @@ class pm100:
             print("No instrument found. Plug and power UP devices.")
             self.reasource_manager.close() 
             exit()
-        for _resource in resources:
-            print(_resource)
+        
         good_resource = [_resource for _resource in resources if all(['USB' in _resource,'INST' in _resource])]
         
         if len(good_resource)>1:
@@ -119,7 +118,7 @@ class pm100:
         self.inst.timeout = 4000#if after 4 sec it does not work, output the error
         self.power_meter = ThorlabsPM100(inst=self.inst)
         #set to photometer
-        self.power_meter.input.adapter.type ='PHOT'
+        #self.power_meter.input.adapter.type ='PHOT' for some reason S122 sensor don't like this......
         self.power_meter.sense.average.count = self.avg_measurment#average 1000 reading by default
         
         self.power_meter.configure.scalar.power()#configure for power measurment

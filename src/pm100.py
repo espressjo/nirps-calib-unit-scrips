@@ -113,7 +113,7 @@ class pm100:
             
         
         self.inst = self.reasource_manager.open_resource(resource)
-        self.inst.timeout = None
+        self.inst.timeout = 4000#if after 4 sec it does not work, output the error
         self.power_meter = ThorlabsPM100(inst=self.inst)
         #set to photometer
         self.power_meter.input.adapter.type ='PHOT'

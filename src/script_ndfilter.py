@@ -17,7 +17,7 @@ from time import sleep
 from pm100 import pm100
 args = argument()
 cfg = cfgfile() 
-simul = True
+simul = False
 ip = cfg['beckoff-ip']#fetch the ip of the beckoff
 port = cfg['beckoff-port']
 
@@ -35,6 +35,7 @@ def mov2pos(ndf,pos):
     OK = True
     print("ND filter target position is %f"%pos)
     with beckoff(ip,hwsimul=simul,port=port) as beck:
+        beck.set_ndfilter_velocity(ndf)
         while(OK):
             beck.set_ndfilter(ndf, pos)
             newpos = beck.get_ndfilter(ndf)
@@ -49,6 +50,7 @@ def selector_mov2pos(select,pos):
     OK = True
     print("Selector target position is %f"%pos)
     with beckoff(ip,hwsimul=simul,port=port) as beck:
+        beck.set_selector_velocity(select)
         while(OK):
             beck.set_selector(select, pos)
             newpos = beck.get_selector(select)

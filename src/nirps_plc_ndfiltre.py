@@ -11,7 +11,7 @@ import traceback
 from time import sleep 
 from sys import argv
 from ndfilterlog import cfgfile
-
+#
 class argument:
     '''
     Small class the reads up the command line argument. 
@@ -65,6 +65,7 @@ class beckoff():
         self.node_select_lrposition = 'MAIN.Selector%d.ctrl.lrPosition' #node to change the lrPosition of Filter 1 or 2
         self.node_select_nCommand = 'MAIN.Selector%d.ctrl.nCommand' #node to change the nCommand of Filter 1 or 2
         self.node_select_bExecute = 'MAIN.Selector%d.ctrl.bExecute' #node to change the bExecute of Filter 1 or 2       
+        #                           'MAIN.Selector%d.ctrl.bExecute'
         self.node_actual_pos = 'MAIN.Filter%d.stat.lrPosActual' #node to read a Filter# variable (stat)
         self.node_lr_position = 'MAIN.Filter%d.ctrl.lrPosition' #node to change the lrPosition of Filter 1 or 2
         self.node_nCommand = 'MAIN.Filter%d.ctrl.nCommand' #node to change the nCommand of Filter 1 or 2
@@ -247,6 +248,82 @@ class beckoff():
         print("The position ask is %f"%pos)
         print("Position %f reached in %fs."%(rpos,timer))
         return rpos
+    def set_ndfilter_velocity(self,filter_nb):
+        '''
+        Set a ND filter velocity. 
+
+        Parameters
+        ----------
+        filter_nb : INT
+            ND filter number.
+        Returns
+        -------
+        INT
+            position display in PLC
+
+        '''
+        if self.simul:
+            print('Setting ND filter %d velocity to %d '%(filter_nb,10))
+            sleep(2)
+            
+            print('Velocity set')
+            return 
+        if filter_nb!=1 and filter_nb!=2:
+            print("filter_nb must be 1 or 2")
+            return
+
+        
+        #Modif!!!!!
+        #We want to check if the motors are initialized before moving motor
+        node_bInitialized = 'MAIN.Filter%d.stat.bInitialised'
+        node_bExecute = 'MAIN.Filter%d.ctrl.bExecute'
+        node_bEnabled = 'MAIN.Filter%d.stat.bEnabled'
+        node_bEnable_ctrl = 'MAIN.Filter%d.ctrl.bEnable'
+        node_nCommand = 'MAIN.Filter%d.ctrl.nCommand'
+        
+        #self.node_bInitialized_selector = 'MAIN.Selector%d.stat.bInitialised'
+        #self.node_bEnabled_selector = 'MAIN.Selector%d.stat.bEnabled'
+        #self.node_bEnable_selector_ctrl = 'MAIN.Selector%d.ctrl.bEnable'
+            
+        #check if motor is enable
+        val1 = self.beck.get_node("ns=4; s=%s"%(node_bEnabled%filter_nb)).get_value()
+        out = str(val1).strip()
+        if 'True' not in out:#if not...
+            dv = ua.DataValue(ua.Variant(float(1), ua.VariantType.Double))
+            var = self.beck.get_node("ns=4;  s=%s"%(node_bEnable_ctrl%filter_nb))
+            var.set_data_value(dv)
+            
+        #check if motor is inititalize
+        val1 = self.beck.get_node("ns=4; s=%s"%(node_bInitialized%filter_nb)).get_value()
+        out = str(val1).strip()
+        if 'True' not in out:#if not...
+            dv = ua.DataValue(ua.Variant(int(1), ua.VariantType.Int32))
+            var = self.beck.get_node("ns=4;  s=%s"%(node_nCommand%filter_nb))
+            var.set_data_value(dv)
+        
+            dv = ua.DataValue(ua.Variant(float(1), ua.VariantType.Boolean))
+            var = self.beck.get_node("ns=4;  s=%s"%(node_bExecute%filter_nb))
+            var.set_data_value(dv)            
+        #fin modif
+        
+        
+        dv = ua.DataValue(ua.Variant(float(10), ua.VariantType.Double))
+        var = self.beck.get_node("ns=4;  s=%s"%("MAIN.Filter%d.ctrl.lrVelocity"%filter_nb))
+        var.set_data_value(dv)
+        
+        dv = ua.DataValue(ua.Variant(int(3), ua.VariantType.Int32))
+        var = self.beck.get_node("ns=4;  s=%s"%(self.node_nCommand%filter_nb))
+        var.set_data_value(dv)
+        
+        dv = ua.DataValue(ua.Variant(float(1), ua.VariantType.Boolean))
+        var = self.beck.get_node("ns=4;  s=%s"%(self.node_bExecute%filter_nb))
+        var.set_data_value(dv)        
+               
+        #check if position is reached
+        sleep(10)
+        
+        print("Velocity Set")
+        return 
     def open_tungsten(self):
         '''
         Close the thungsten lamp
@@ -275,7 +352,18 @@ class beckoff():
             dv = ua.DataValue(ua.Variant(float(1), ua.VariantType.Boolean))
             var = self.beck.get_node("ns=4;  s=%s"%(node_bExecute))
             var.set_data_value(dv)
+        #set some config
+        #cfg.nAnalogThreshold = 1
+        dv = ua.DataValue(ua.Variant(int(1), ua.VariantType.Int32))
+        var = self.beck.get_node("ns=4;  s=%s"%("MAIN.Tungsten1.cfg.nAnalogThreshold"))
+        var.set_data_value(dv)
+        
+        dv = ua.DataValue(ua.Variant(int(0), ua.VariantType.Int32))
+        var = self.beck.get_node("ns=4;  s=%s"%("MAIN.Tungsten1.cfg.nMaxOn"))
+        var.set_data_value(dv)
+        
         #we open the lamp
+        
         print('Opening tungsten lamp.')
         dv = ua.DataValue(ua.Variant(int(3), ua.VariantType.Int32))
         var = self.beck.get_node("ns=4;  s=%s"%(node_nCommand))
@@ -322,6 +410,72 @@ class beckoff():
         var = self.beck.get_node("ns=4;  s=%s"%(node_bExecute))
         var.set_data_value(dv)        
         print('done')
+    def set_selector_velocity(self,selector):
+        '''
+        Set a selector velocity
+
+        Parameters
+        ----------
+        selector : INT
+            Selector number.
+
+        Returns
+        -------
+        INT
+            Selector position display in PLC
+            
+        '''#MAIN.Selector%d.ctrl.lrVelocity =5
+        if self.simul:
+            print('Setting selector %d velocity at %f'%(selector,5))
+            sleep(2)
+            return 
+        if selector!=1 and selector!=2:
+            print("filter_nb must be 1 or 2")
+            return
+        
+        #Modif!!!!!
+        #We want to check if the motors are initialized before moving motor
+        node_bInitialized = 'MAIN.Selector%d.stat.bInitialised'
+        node_bExecute = 'MAIN.Selector%d.ctrl.bExecute'
+        node_bEnabled = 'MAIN.Selector%d.stat.bEnabled'
+        node_bEnable_ctrl = 'MAIN.Selector%d.ctrl.bEnable'
+        node_nCommand = 'MAIN.Selector%d.ctrl.nCommand'            
+        #check if motor is enable
+        val1 = self.beck.get_node("ns=4; s=%s"%(node_bEnabled%selector)).get_value()
+        out = str(val1).strip()
+        if 'True' not in out:#if not...
+            dv = ua.DataValue(ua.Variant(float(1), ua.VariantType.Double))
+            var = self.beck.get_node("ns=4;  s=%s"%(node_bEnable_ctrl%selector))
+            var.set_data_value(dv)
+            
+        #check if motor is inititalize
+        val1 = self.beck.get_node("ns=4; s=%s"%(node_bInitialized%selector)).get_value()
+        out = str(val1).strip()
+        if 'True' not in out:#if not...
+            dv = ua.DataValue(ua.Variant(int(1), ua.VariantType.Int32))
+            var = self.beck.get_node("ns=4;  s=%s"%(node_nCommand%selector))
+            var.set_data_value(dv)
+        
+            dv = ua.DataValue(ua.Variant(float(1), ua.VariantType.Boolean))
+            var = self.beck.get_node("ns=4;  s=%s"%(node_bExecute%selector))
+            var.set_data_value(dv)            
+        #fin modif
+        
+        
+        dv = ua.DataValue(ua.Variant(float(5), ua.VariantType.Double))
+        var = self.beck.get_node("ns=4;  s=%s"%("MAIN.Selector%d.ctrl.lrVelocity"%selector))
+        var.set_data_value(dv)
+        
+        dv = ua.DataValue(ua.Variant(int(3), ua.VariantType.Int32))
+        var = self.beck.get_node("ns=4;  s=%s"%(self.node_select_nCommand%selector))
+        var.set_data_value(dv)
+        
+        dv = ua.DataValue(ua.Variant(float(1), ua.VariantType.Boolean))
+        var = self.beck.get_node("ns=4;  s=%s"%(self.node_select_bExecute%selector))
+        var.set_data_value(dv)        
+        sleep(10)   
+        print("Velocity Set")
+        return 
     def set_selector(self,selector,pos):
         '''
         Set a ND filter to position
@@ -352,10 +506,10 @@ class beckoff():
         #Modif!!!!!
         #We want to check if the motors are initialized before moving motor
         node_bInitialized = 'MAIN.Selector%d.stat.bInitialised'
-        node_bExecute = 'MAIN.Selector%d.ctrl.bExecute'
+        node_bExecute =     'MAIN.Selector%d.ctrl.bExecute'
         node_bEnabled = 'MAIN.Selector%d.stat.bEnabled'
         node_bEnable_ctrl = 'MAIN.Selector%d.ctrl.bEnable'
-        node_nCommand = 'MAIN.Selector%d.ctrl.nCommand'
+        node_nCommand =     'MAIN.Selector%d.ctrl.nCommand'
         
         #self.node_bInitialized_selector = 'MAIN.Selector%d.stat.bInitialised'
         #self.node_bEnabled_selector = 'MAIN.Selector%d.stat.bEnabled'
@@ -364,24 +518,32 @@ class beckoff():
         #check if motor is enable
         val1 = self.beck.get_node("ns=4; s=%s"%(node_bEnabled%selector)).get_value()
         out = str(val1).strip()
+        
         if 'True' not in out:#if not...
-            dv = ua.DataValue(ua.Variant(float(1), ua.VariantType.Double))
+            dv = ua.DataValue(ua.Variant(True, ua.VariantType.Boolean))
             var = self.beck.get_node("ns=4;  s=%s"%(node_bEnable_ctrl%selector))
             var.set_data_value(dv)
             
         #check if motor is inititalize
         val1 = self.beck.get_node("ns=4; s=%s"%(node_bInitialized%selector)).get_value()
         out = str(val1).strip()
+        
         if 'True' not in out:#if not...
             dv = ua.DataValue(ua.Variant(int(1), ua.VariantType.Int32))
             var = self.beck.get_node("ns=4;  s=%s"%(node_nCommand%selector))
             var.set_data_value(dv)
-        
             dv = ua.DataValue(ua.Variant(float(1), ua.VariantType.Boolean))
             var = self.beck.get_node("ns=4;  s=%s"%(node_bExecute%selector))
-            var.set_data_value(dv)            
+            var.set_data_value(dv)
         #fin modif
-        
+        while(True):
+            sleep(1)
+            print('init...')
+            val1 = self.beck.get_node("ns=4; s=%s"%(node_bInitialized%selector)).get_value()
+            out = str(val1).strip()
+            if 'True' in out:
+                break
+            
         
         dv = ua.DataValue(ua.Variant(float(pos), ua.VariantType.Double))
         var = self.beck.get_node("ns=4;  s=%s"%(self.node_select_lrposition%selector))
@@ -447,6 +609,8 @@ def help():
     print('\t--plc-simul: run in simulation')
     print('\t--open-tungsten: open tungsten lamp')
     print('\t--close-tungsten: open tungsten lamp')
+    print('\t--set-speed-selector: set the speed for device')
+    print('\t--set-speed-ndfilter: set the speed for device')
 def get_args_conf():
     '''
     Will check if an argument for port and ip is set, then
@@ -553,5 +717,11 @@ if '__main__' in __name__:
     elif '--close-tungsten' in args:
         with beckoff(ip,port=p,hwsimul=simul) as beck:
             beck.close_tungsten()
+    elif all(['--set-speed-selector' in args]):
+        with beckoff(ip,port=p,hwsimul=simul) as beck:
+            beck.set_selector_velocity(1 if '--selector1' in args else 2)
+    elif all(['--set-speed-ndfilter' in args]):
+        with beckoff(ip,port=p,hwsimul=simul) as beck:
+            beck.set_selector_velocity(1 if '--ndfilter' in args else 2)
     
     

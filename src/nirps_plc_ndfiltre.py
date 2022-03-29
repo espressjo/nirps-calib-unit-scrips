@@ -560,22 +560,39 @@ class beckoff():
         var = self.beck.get_node("ns=4;  s=%s"%(self.node_select_bExecute%selector))
         var.set_data_value(dv)        
         #sleep(10)   
-        timer = 0
-        for i in range(240):#2minutes timeout
-            if i%30==0:
-                print('timeout in %.1f seconds'%(240-timer))
-            sleep(1)
-            timer+=1
-            if abs(self.get_selector(selector)-pos)<0.001:
-                sleep(1)
-                timer+=1
+        #MAIN.Selector2.stat.bMovingAbs
+        val1 = self.beck.get_node("ns=4; s=%s"%("MAIN.Selector%d.stat.bMovingAbs"%selector)).get_value()
+        out = str(val1).strip()
+        timeout = 0
+        while('False' not in out):
+            sleep(0.5)
+            print('sleeping 0.5sec')
+            val1 = self.beck.get_node("ns=4; s=%s"%("MAIN.Selector%d.stat.bMovingAbs"%selector)).get_value()
+            out = str(val1).strip()
+            timeout+=0.5
+            if (timeout>2*60):
                 break
         rpos = self.get_selector(selector)
-        if (rpos!=pos):
-            sleep(4)
-            timer+=4
+        
         print("The position ask is %f"%pos)
-        print("Position %f reached in %fs."%(rpos,timer))
+        print("Position %f reached in %fs."%(rpos,timeout))
+        
+        # timer = 0
+        # for i in range(240):  # 2minutes timeout
+        #     if i % 30 == 0:
+        #         print('timeout in %.1f seconds' % (240-timer))
+        #     sleep(1)
+        #     timer += 1
+        #     if abs(self.get_selector(selector)-pos) < 0.001:
+        #         sleep(1)
+        #         timer += 1
+        #         break
+        # rpos = self.get_selector(selector)
+        # if (rpos != pos):
+        #     sleep(4)
+        #     timer += 4
+        # print("The position ask is %f" % pos)
+        # print("Position %f reached in %fs." % (rpos, timer))
         return rpos
 
     def __enter__(self):

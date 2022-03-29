@@ -307,7 +307,7 @@ class beckoff():
         #fin modif
         
         
-        dv = ua.DataValue(ua.Variant(float(10), ua.VariantType.Double))
+        dv = ua.DataValue(ua.Variant(float(vel), ua.VariantType.Double))
         var = self.beck.get_node("ns=4;  s=%s"%("MAIN.Filter%d.ctrl.lrVelocity"%filter_nb))
         var.set_data_value(dv)
         
@@ -462,7 +462,7 @@ class beckoff():
         #fin modif
         
         
-        dv = ua.DataValue(ua.Variant(float(5), ua.VariantType.Double))
+        dv = ua.DataValue(ua.Variant(float(vel), ua.VariantType.Double))
         var = self.beck.get_node("ns=4;  s=%s"%("MAIN.Selector%d.ctrl.lrVelocity"%selector))
         var.set_data_value(dv)
         

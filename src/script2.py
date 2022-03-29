@@ -28,4 +28,5 @@ if '__main__' in __name__:
     with beckoff(ip=ip) as beck:
         while(1):
             sleep(1)
-            print(beck.get_selector_position(2))
+           
+            print(beck.get_selector(2))

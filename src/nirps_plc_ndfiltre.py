@@ -537,12 +537,15 @@ class beckoff():
             var.set_data_value(dv)
         #fin modif
         while(True):
-            sleep(1)
-            print('init...')
+            
+           
             val1 = self.beck.get_node("ns=4; s=%s"%(node_bInitialized%selector)).get_value()
             out = str(val1).strip()
+            
             if 'True' in out:
                 break
+            print('init...')
+            sleep(1)
             
         
         dv = ua.DataValue(ua.Variant(float(pos), ua.VariantType.Double))
@@ -556,18 +559,21 @@ class beckoff():
         dv = ua.DataValue(ua.Variant(float(1), ua.VariantType.Boolean))
         var = self.beck.get_node("ns=4;  s=%s"%(self.node_select_bExecute%selector))
         var.set_data_value(dv)        
-        sleep(10)   
-        timer = 10
+        #sleep(10)   
+        timer = 0
         for i in range(240):#2minutes timeout
             if i%30==0:
                 print('timeout in %.1f seconds'%(240-timer))
             sleep(1)
             timer+=1
             if abs(self.get_selector(selector)-pos)<0.001:
-                sleep(5)
-                timer+=5
+                sleep(1)
+                timer+=1
                 break
         rpos = self.get_selector(selector)
+        if (rpos!=pos):
+            sleep(4)
+            timer+=4
         print("The position ask is %f"%pos)
         print("Position %f reached in %fs."%(rpos,timer))
         return rpos

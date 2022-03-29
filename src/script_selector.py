@@ -27,7 +27,7 @@ def log(fname,pos,flux):
     cfg = cfgfile()
     path = cfg['logpath']
     with open(join(path,fname),'a') as f:
-        f.write('%f,%f\n'%(pos,flux))
+        f.write('%f,%.9f\n'%(pos,flux))
 def make_name(selector,start,stop,steps,position_name):
     #mid = linspace(start,stop,steps,dtype=int)[int(steps/2)]
     time = datetime.now().strftime(fmt)

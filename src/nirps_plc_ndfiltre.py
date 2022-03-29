@@ -561,6 +561,7 @@ class beckoff():
         var.set_data_value(dv)        
         #sleep(10)   
         #MAIN.Selector2.stat.bMovingAbs
+        sleep(0.5)
         val1 = self.beck.get_node("ns=4; s=%s"%("MAIN.Selector%d.stat.bMovingAbs"%selector)).get_value()
         out = str(val1).strip()
         timeout = 0

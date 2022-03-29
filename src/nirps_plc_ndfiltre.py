@@ -722,6 +722,6 @@ if '__main__' in __name__:
             beck.set_selector_velocity(1 if '--selector1' in args else 2)
     elif all(['--set-speed-ndfilter' in args]):
         with beckoff(ip,port=p,hwsimul=simul) as beck:
-            beck.set_selector_velocity(1 if '--ndfilter' in args else 2)
+            beck.set_ndfilter_velocity(1 if '--ndfilter1' in args else 2)
     
     

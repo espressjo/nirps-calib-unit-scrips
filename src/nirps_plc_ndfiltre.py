@@ -248,7 +248,7 @@ class beckoff():
         print("The position ask is %f"%pos)
         print("Position %f reached in %fs."%(rpos,timer))
         return rpos
-    def set_ndfilter_velocity(self,filter_nb):
+    def set_ndfilter_velocity(self,filter_nb,vel=10):
         '''
         Set a ND filter velocity. 
 
@@ -263,7 +263,7 @@ class beckoff():
 
         '''
         if self.simul:
-            print('Setting ND filter %d velocity to %d '%(filter_nb,10))
+            print('Setting ND filter %d velocity to %d '%(filter_nb,vel))
             sleep(2)
             
             print('Velocity set')
@@ -410,7 +410,7 @@ class beckoff():
         var = self.beck.get_node("ns=4;  s=%s"%(node_bExecute))
         var.set_data_value(dv)        
         print('done')
-    def set_selector_velocity(self,selector):
+    def set_selector_velocity(self,selector,vel=5):
         '''
         Set a selector velocity
 
@@ -426,7 +426,7 @@ class beckoff():
             
         '''#MAIN.Selector%d.ctrl.lrVelocity =5
         if self.simul:
-            print('Setting selector %d velocity at %f'%(selector,5))
+            print('Setting selector %d velocity at %f'%(selector,vel))
             sleep(2)
             return 
         if selector!=1 and selector!=2:
@@ -722,6 +722,7 @@ if '__main__' in __name__:
             beck.set_selector_velocity(1 if '--selector1' in args else 2)
     elif all(['--set-speed-ndfilter' in args]):
         with beckoff(ip,port=p,hwsimul=simul) as beck:
-            beck.set_ndfilter_velocity(1 if '--ndfilter1' in args else 2)
+            beck.set_ndfilter_velocity(1 if '--nd-filter1' in args else 2)
+    
     
     

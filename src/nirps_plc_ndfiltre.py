@@ -111,14 +111,15 @@ class beckoff():
         self.beck = Client("opc.tcp://%s:%d"%(self.ip_addr,self.port))
         self.beck.connect()
         root=self.beck.get_root_node()
-        print(":::::root:::::")
-        print(root)
+        #print(":::::root:::::")
+        #print(root)
         objects = self.beck.get_objects_node()
-        print(":::::objects:::::")
-        print(objects)
+        #print(":::::objects:::::")
+        #print(objects)
         child = objects.get_children()
-        print(":::::child:::::")    
-        print(child)
+        #print(":::::child:::::")    
+        #print(child)
+        print("Connected")
     def get_ndfilter(self,filter_nb):
         '''
         This function will return the ndfilter position. 
@@ -537,8 +538,6 @@ class beckoff():
             var.set_data_value(dv)
         #fin modif
         while(True):
-            
-           
             val1 = self.beck.get_node("ns=4; s=%s"%(node_bInitialized%selector)).get_value()
             out = str(val1).strip()
             
@@ -546,8 +545,7 @@ class beckoff():
                 break
             print('init...')
             sleep(1)
-            
-        
+                    
         dv = ua.DataValue(ua.Variant(float(pos), ua.VariantType.Double))
         var = self.beck.get_node("ns=4;  s=%s"%(self.node_select_lrposition%selector))
         var.set_data_value(dv)
@@ -584,10 +582,15 @@ class beckoff():
                 print('timeout in %.1f seconds' % (240-timer))
             sleep(0.5)
             timer += 0.5
-            if abs(self.get_selector(selector)-pos) < 0.00055:
+            apos = self.get_selector(selector)
+            if abs(apos-pos) < 0.00055:
                 sleep(0.5)
                 timer += 0.5
                 break
+        if '--test' in args:
+            for i in range(10):
+                print(self.get_selector(selector))
+                sleep(0.5)
         rpos = self.get_selector(selector)
         
         print("The position ask is %f" % pos)
@@ -740,11 +743,19 @@ if '__main__' in __name__:
         with beckoff(ip,port=p,hwsimul=simul) as beck:
             beck.close_tungsten()
     elif all(['--set-speed-selector' in args]):
+        if 'Null' not in args['--set-speed-selector']:
+            vel = float(args['--set-speed-selector'])
+        else:
+            vel=5.0
         with beckoff(ip,port=p,hwsimul=simul) as beck:
-            beck.set_selector_velocity(1 if '--selector1' in args else 2)
+            beck.set_selector_velocity(1 if '--selector1' in args else 2,vel)
     elif all(['--set-speed-ndfilter' in args]):
+        if 'Null' not in args['--set-speed-ndfilter']:
+            vel=args['--set-speed-ndfilter']
+        else:
+            vel=10.0
         with beckoff(ip,port=p,hwsimul=simul) as beck:
-            beck.set_ndfilter_velocity(1 if '--nd-filter1' in args else 2)
+            beck.set_ndfilter_velocity(1 if '--nd-filter1' in args else 2,vel)
     
     
     

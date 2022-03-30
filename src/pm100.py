@@ -284,6 +284,7 @@ def help():
     print('\t\t--read: make a power readout with pm100.')
     print('\t\t--test-hardware: Test the hardware')
     print('\t\t--test-package: Test the required python package')
+    print('\t\t--calibrate: Zero adjust the PM100')
     
 def test_hardware():
     from ThorlabsPM100 import ThorlabsPM100
@@ -328,6 +329,9 @@ if __name__=="__main__":
         exit(0)
     if '--test-hardware' in args:
         test_hardware()
+    if '--calibrate' in args:
+        with pm100(simulation=False) as pm:
+            pm.zero_adjust()
         
             
         

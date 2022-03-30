@@ -239,16 +239,27 @@ class beckoff():
         for i in range(240):
             if i%30==0:
                 print('Timeout in %.1f seconds'%(240-i))
-            sleep(1)
-            timer+=1
-            if (abs(self.get_ndfilter(filter_nb)-pos)<0.1):
-                sleep(10)#to be really sure we reached the position, we could tune (<1) and this sleep
-                timer+=10
-                break
+            sleep(0.5)
+            timer+=0.5
+            if (abs(self.get_ndfilter(filter_nb)-pos)<0.01):
+                sleep(0.5)#to be really sure we reached the position, we could tune (<1) and this sleep
+                timer+=0.5
+                if self.make_sure_posndfilter_is_stable(filter_nb,pos):
+                    break
+                
         rpos = self.get_ndfilter(filter_nb)
         print("The position ask is %f"%pos)
         print("Position %f reached in %fs."%(rpos,timer))
         return rpos
+    def make_sure_posndfilter_is_stable(self,ndf,pos):
+        print("Waiting for the selector to stop moving")
+        b = [False,False,False]
+        for i in range(10):
+            sleep(0.5)
+            b.append(abs(self.get_ndfilter(ndf)-pos)<=0.01)
+            if all(b[-3:]):
+                return True
+        return False
     def set_ndfilter_velocity(self,filter_nb,vel=10):
         '''
         Set a ND filter velocity. 
@@ -583,20 +594,27 @@ class beckoff():
             sleep(0.5)
             timer += 0.5
             apos = self.get_selector(selector)
-            if abs(apos-pos) < 0.00055:
+            if abs(apos-pos) < 0.002:
                 sleep(0.5)
+                if self.make_sure_pos_is_stable(selector,pos):
+                    break
                 timer += 0.5
-                break
-        if '--test' in args:
-            for i in range(10):
-                print(self.get_selector(selector))
-                sleep(0.5)
+                
+        
         rpos = self.get_selector(selector)
         
         print("The position ask is %f" % pos)
         print("Position %f reached in %fs." % (rpos, timer))
         return rpos
-
+    def make_sure_pos_is_stable(self,selector,pos):
+        print("Waiting for the selector to stop moving")
+        b = [False,False,False]
+        for i in range(10):
+            sleep(0.5)
+            b.append(abs(self.get_selector(selector)-pos)<=0.002)
+            if all(b[-3:]):
+                return True
+        return False
     def __enter__(self):
         '''
         Since connection to hardware is made, its better to use with statement i.e., with beckoff("192.168.62.150") as beck: ...

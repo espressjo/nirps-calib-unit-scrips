@@ -66,8 +66,17 @@ def help():
     print('\t--list-data: lost all data')
     print('\t--plot-last: plot last log file')
     print('\t--plot: plot given log')
+    print('\t--plot-simple: plot flux of last dataset')
 def get_info(fname):
     return basename(fname).split('.')[0].replace('ndfilter','')
+def plotsimple(file):
+    data = pd.read_csv(file)
+    position = data['position'].to_numpy()
+    flux = data['flux'].to_numpy()
+    f,ax = plt.subplots()
+    ax.plot(position,flux,'o',markersize=2)
+    ax.set(xlabel='position',ylabel='Flux (uW)',title="ND Filter Wheel %s"%(get_info(file)))
+    plt.show()
 def plot_filtred_flux(file):#f0 = 92705,f1 = 92960
     #get data
     data = pd.read_csv(file)
@@ -160,6 +169,9 @@ if '__main__' in __name__:
         f = get_last()
         plot_filtred_flux(f)
         plot_fit(f)
+    if '--plot-simple' in args:
+        f = get_last()
+        plotsimple(f)
     if '--plot' in args:
         cfg = cfgfile()
         lpath = cfg['logpath']

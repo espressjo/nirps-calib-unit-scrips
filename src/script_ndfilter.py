@@ -75,7 +75,7 @@ def get_selector_position(name,selector):
 def run(ndf,start,stop,steps):
     from pm100 import pm100
     log = nd_log(ndf)
-    positions = linspace(start,stop,steps+1,dtype=int)
+    positions = linspace(int(start),int(stop),int(steps)+1,dtype=int)
     with beckoff(ip,hwsimul=simul,port=port) as beck:
         with pm100(simulation=simul) as pm100:
             for p in positions: 
@@ -92,6 +92,7 @@ def help():
     #print('--run: start the ndfilter')
     print('--ndfilter1: Select filter #1')
     print('--ndfilter2: Select filter #2')
+    print('--skip-setup: skip everything')
 if '__main__' in __name__:
     args = argument()
     if '--help' in args:
@@ -116,20 +117,21 @@ if '__main__' in __name__:
     
     
     #main script logic
-    check_tungsten()#check if the tungsten lamp is open
-    input('Selector %d will now move to DARK position. <press any key>'%ndf)
-    select_p = get_selector_position('DARK',ndf)
-    selector_mov2pos(ndf,select_p)
-    #we now put the filter wheel approx. to a hign ND level.
-    input('We will now set the filter wheel to a high ND level. <press any key>')
-    mov2pos(ndf, 92930 if ndf==1 else 92820)#guess the high ND position
-    input('We will calibrate the power meter. Make sure it is dark in the room. <press any key>')
-    with pm100(simulation=simul) as PM:
-        PM.zero_adjust()
-    input('Power meter is now calibrated. The selector will now be moved to the Tungsten position. <Press any key>' )
-    select_p = get_selector_position('TUN',ndf)
-    selector_mov2pos(ndf,select_p)
-    input('The ND filter wheel will now be moved to %d. <Press any key>'%start)
+    if '--skip-setup' not in args:
+        check_tungsten()#check if the tungsten lamp is open
+        input('Selector %d will now move to DARK position. <press any key>'%ndf)
+        select_p = get_selector_position('DARK',ndf)
+        selector_mov2pos(ndf,select_p)
+        #we now put the filter wheel approx. to a hign ND level.
+        input('We will now set the filter wheel to a high ND level. <press any key>')
+        mov2pos(ndf, 92930 if ndf==1 else 92820)#guess the high ND position
+        input('We will calibrate the power meter. Make sure it is dark in the room. <press any key>')
+        with pm100(simulation=simul) as PM:
+            PM.zero_adjust()
+        input('Power meter is now calibrated. The selector will now be moved to the Tungsten position. <Press any key>' )
+        select_p = get_selector_position('TUN',ndf)
+        selector_mov2pos(ndf,select_p)
+        input('The ND filter wheel will now be moved to %d. <Press any key>'%start)
     mov2pos(ndf, start)#make sure we are at the right statirng position.    
     run(ndf,start,stop,steps)
     from analyse_ndfilter import get_last,plot_filtred_flux,plot_fit

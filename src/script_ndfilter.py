@@ -106,8 +106,8 @@ if '__main__' in __name__:
     if all(['--ndfilter1' not in args,'--ndfilter2' not in args]):
         help()
         exit(0)
-    start = args['--start'] if '--start' in args else start_12[ndf]
-    stop  = args['--stop']  if '--stop'  in args else stop_12[ndf]
+    start = args['--start'] if '--start' in args else start_12[ndf-1]
+    stop  = args['--stop']  if '--stop'  in args else stop_12[ndf-1]
         
     
     if '--steps' in args:

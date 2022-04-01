@@ -17,7 +17,7 @@ from time import sleep
 from pm100 import pm100
 args = argument()
 cfg = cfgfile() 
-simul = False
+simul = True
 ip = cfg['beckoff-ip']#fetch the ip of the beckoff
 port = cfg['beckoff-port']
 
@@ -97,18 +97,19 @@ if '__main__' in __name__:
     if '--help' in args:
         help()
         exit(0)   
+    if '--list-encoder-default' in args:
+        print('\tndfilter #1: start: %d, stop: %d'%(start_12[0],stop_12[0]))
+        print('\tndfilter #2: start: %d, stop: %d'%(start_12[1],stop_12[1]))
+        exit(0)
     #some checkout
     ndf = 1 if '--ndfilter1' in args else 2#select the right NDfilter/selector
-    if not any(['--ndfilter1' in args,'--ndfilter2' in args]):
+    if all(['--ndfilter1' not in args,'--ndfilter2' not in args]):
         help()
         exit(0)
     start = args['--start'] if '--start' in args else start_12[ndf]
     stop  = args['--stop']  if '--stop'  in args else stop_12[ndf]
         
-    if '--list-encoder-default' in args:
-        print('\tndfilter #1: start: %d, stop: %d'%(start_12[0],stop_12[0]))
-        print('\tndfilter #2: start: %d, stop: %d'%(start_12[1],stop_12[1]))
-        exit(0)
+    
     if '--steps' in args:
         steps = args['--steps']
     

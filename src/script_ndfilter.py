@@ -17,7 +17,7 @@ from time import sleep
 from pm100 import pm100
 args = argument()
 cfg = cfgfile() 
-simul = True
+simul = False
 ip = cfg['beckoff-ip']#fetch the ip of the beckoff
 port = cfg['beckoff-port']
 

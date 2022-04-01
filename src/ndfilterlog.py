@@ -84,7 +84,7 @@ class nd_log:
         return self.fname
     def log(self,pos,flux):
         with open(self.fname,'a') as f:
-            f.write('%d,%f\n'%(pos,flux)) 
+            f.write('%d,%.9f\n'%(pos,flux)) 
 # class nd_filter_log:
 #     def __init__(self,):
         

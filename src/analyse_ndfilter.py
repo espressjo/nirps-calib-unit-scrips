@@ -72,7 +72,7 @@ def get_info(fname):
 def plotsimple(file):
     data = pd.read_csv(file)
     position = data['position'].to_numpy()
-    flux = data['flux'].to_numpy()
+    flux = data['flux'].to_numpy()*1e6
     f,ax = plt.subplots()
     ax.plot(position,flux,'o',markersize=2)
     ax.set(xlabel='position',ylabel='Flux (uW)',title="ND Filter Wheel %s"%(get_info(file)))

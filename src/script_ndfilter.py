@@ -22,8 +22,8 @@ ip = cfg['beckoff-ip']#fetch the ip of the beckoff
 port = cfg['beckoff-port']
 
 #default value
-start_12 =  [92640,92530]#start pos. for ndfilter #1 and #2
-stop_12 = [93000,92890]#stop pos. for ndfilter #1 and #2
+start_12 =  [92640,92650]#92530]#start pos. for ndfilter #1 and #2
+stop_12 = [93000,93010]#92890]#stop pos. for ndfilter #1 and #2
 steps = 360#number of step (degree)
 def mov2pos(ndf,pos):
     '''

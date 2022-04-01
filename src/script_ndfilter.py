@@ -110,7 +110,8 @@ if '__main__' in __name__:
     start = args['--start'] if '--start' in args else start_12[ndf-1]
     stop  = args['--stop']  if '--stop'  in args else stop_12[ndf-1]
         
-    
+    start = int(start)
+    stop = int(stop)
     if '--steps' in args:
         steps = args['--steps']
     

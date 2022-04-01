@@ -122,7 +122,7 @@ if '__main__' in __name__:
     selector_mov2pos(ndf,select_p)
     #we now put the filter wheel approx. to a hign ND level.
     input('We will now set the filter wheel to a high ND level. <press any key>')
-    mov2pos(ndf, 92930 if ndf==1 else 92880)#guess the high ND position
+    mov2pos(ndf, 92930 if ndf==1 else 92820)#guess the high ND position
     input('We will calibrate the power meter. Make sure it is dark in the room. <press any key>')
     with pm100(simulation=simul) as PM:
         PM.zero_adjust()
